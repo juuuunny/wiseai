@@ -144,47 +144,6 @@ checkstyle {
 	maxWarnings = 100
 }
 
-// ===== SpotBugs 설정 (필요시 활성화) =====
-// spotbugs {
-//	toolVersion = '4.8.3'
-//	effort = 'max'
-//	reportLevel = 'low'
-//	ignoreFailures = true
-//	excludeFilter = file('spotbugs-exclude.xml')
-// }
-//
-// spotbugsMain {
-//	dependsOn compileJava
-//	classes = fileTree("$buildDir/classes/java/main") {
-//		exclude '**/Q*.class'  // QueryDSL Q클래스 제외
-//	}
-//	reports {
-//		html {
-//			required = true
-//			outputLocation = file("$buildDir/reports/spotbugs/main.html")
-//		}
-//		xml {
-//			required = true
-//			outputLocation = file("$buildDir/reports/spotbugs/main.xml")
-//		}
-//	}
-// }
-//
-// spotbugsTest {
-//	dependsOn compileTestJava
-//	classes = fileTree("$buildDir/classes/java/test")
-//	reports {
-//		html {
-//			required = true
-//			outputLocation = file("$buildDir/reports/spotbugs/test.html")
-//		}
-//		xml {
-//			required = true
-//			outputLocation = file("$buildDir/reports/spotbugs/test.xml")
-//		}
-//	}
-// }
-
 // ===== Spotless 설정 (항상 활성화) =====
 spotless {
 	java {
