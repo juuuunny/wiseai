@@ -44,6 +44,11 @@ jobs:
           if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
             echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}" >> $GITHUB_ENV
             echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
+            # SonarQube Cloud를 사용하는 경우 organization 설정
+            if [ -n "${{ secrets.SONAR_ORGANIZATION }}" ]; then
+              echo "SONAR_ORGANIZATION=${{ secrets.SONAR_ORGANIZATION }}" >> $GITHUB_ENV
+              echo "SonarQube Cloud organization configured"
+            fi
             echo "SonarQube secrets configured"
           else
             echo "SONAR_TOKEN not set, SonarQube analysis will be skipped"
