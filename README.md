@@ -1,5 +1,7 @@
 # 회의실 예약 시스템 RESTful API
 
+**GitHub 저장소**: https://github.com/juuuunny/wiseai
+
 ## 📋 프로젝트 개요
 
 사내 회의실 예약을 위한 RESTful API 서버입니다. Docker & Docker Compose 기반 컨테이너 환경에서 실행되며, Swagger UI를 통한 API 문서화 및 테스트를 지원합니다.
