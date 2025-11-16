@@ -44,19 +44,44 @@
 
 #### 1-1. SonarQube 설정 (선택사항, 권장)
 
+**⚠️ 중요**: SonarQube Secrets는 선택사항입니다. 설정하지 않아도 빌드는 정상적으로 진행되며, SonarQube 분석만 스킵됩니다.
+
+**로컬 SonarQube 사용 시**:
+
 ```
 SONAR_HOST_URL
-- 값: http://localhost:9000 (로컬 SonarQube) 또는 https://sonarcloud.io (SonarCloud)
-- 설명: SonarQube 서버 URL
+- 값: http://localhost:9000
+- 설명: 로컬에서 실행 중인 SonarQube 서버 URL
 
 SONAR_TOKEN
 - 값: SonarQube에서 발급한 토큰
 - 발급 방법:
-  1. SonarQube UI 접속 (http://localhost:9000)
-  2. 로그인 (admin / WiseAi1234@@)
-  3. My Account → Security → Generate Token
-  4. 토큰 복사하여 Secrets에 저장
+  1. 로컬에서 SonarQube 실행: docker-compose up -d sonarqube
+  2. SonarQube UI 접속: http://localhost:9000
+  3. 첫 실행 시: 초기 비밀번호 확인 (로그에서 확인)
+  4. 로그인 후: My Account → Security → Generate Token
+  5. 토큰 복사하여 GitHub Secrets에 저장
 ```
+
+**SonarCloud 사용 시** (무료 플랜 제공):
+
+```
+SONAR_HOST_URL
+- 값: https://sonarcloud.io
+- 설명: SonarCloud 서버 URL
+
+SONAR_TOKEN
+- 값: SonarCloud에서 발급한 토큰
+- 발급 방법:
+  1. https://sonarcloud.io 접속 및 로그인
+  2. My Account → Security → Generate Token
+  3. 토큰 복사하여 GitHub Secrets에 저장
+```
+
+**설정하지 않을 경우**:
+- GitHub Actions에서 SonarQube 분석은 스킵됩니다
+- 빌드, 테스트, Checkstyle, Spotless, JaCoCo는 정상 실행됩니다
+- 로컬에서는 `SONAR_TOKEN` 환경변수 설정 시에만 SonarQube 분석 실행
 
 #### 1-2. Docker Hub 설정 (필수 - main 브랜치 배포 시)
 
