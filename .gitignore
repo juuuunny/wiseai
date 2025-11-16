@@ -35,3 +35,17 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+.env
+.env.*
+!.env.example
+!.env.template
+*.env
+*.env.local
+*.env.prod
+*.env.production
+*.env.dev
+*.env.development
+*.env.test
+*.env.staging

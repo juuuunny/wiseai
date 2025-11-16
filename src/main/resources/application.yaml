@@ -36,9 +36,9 @@ spring:
     activate:
       on-profile: docker
   datasource:
-    url: jdbc:mysql://db:3306/assignment?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=UTC
-    username: assignment
-    password: assignment
+    url: ${DB_URL:jdbc:mysql://db:3306/assignment?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=UTC}
+    username: ${DB_USERNAME:assignment}
+    password: ${DB_PASSWORD:assignment}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

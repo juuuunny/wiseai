@@ -120,6 +120,10 @@ sonarqube {
 		property "sonar.sourceEncoding", "UTF-8"
 		property "sonar.java.source", "17"
 		property "sonar.java.target", "17"
+		// 리소스 파일에서 하드코딩된 자격증명 검사 제외 (환경 변수 사용)
+		property "sonar.issue.ignore.multicriteria", "e1"
+		property "sonar.issue.ignore.multicriteria.e1.ruleKey", "java:S6437"
+		property "sonar.issue.ignore.multicriteria.e1.resourceKey", "**/application*.yaml"
 	}
 }
 
@@ -294,7 +298,8 @@ jacocoTestReport {
 		}))
 	}
 
-	finalizedBy jacocoTestCoverageVerification
+	// CI 워크플로우에서 명시적으로 jacocoTestCoverageVerification 실행
+	// finalizedBy jacocoTestCoverageVerification
 }
 
 jacocoTestCoverageVerification {

@@ -34,6 +34,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Setup CI Environment
+        run: |
+          echo "CI=true" >> $GITHUB_ENV
+          echo "CI environment variable set"
+
       - name: Setup SonarQube (선택사항)
         run: |
           if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
@@ -46,16 +51,45 @@ jobs:
         continue-on-error: true
 
       - name: Checkstyle (코드 스타일 검사)
-        run: ./gradlew checkstyleMain checkstyleTest
+        run: |
+          echo "Running Checkstyle..."
+          ./gradlew checkstyleMain checkstyleTest --stacktrace || {
+            echo "Checkstyle failed!"
+            exit 1
+          }
 
       - name: Spotless (코드 포맷 검사)
-        run: ./gradlew spotlessCheck
+        run: |
+          echo "Running Spotless..."
+          ./gradlew spotlessCheck --stacktrace || {
+            echo "Spotless failed!"
+            exit 1
+          }
 
       - name: Build (컴파일 + 테스트)
-        run: ./gradlew clean build -x checkstyleMain -x checkstyleTest -x spotlessCheck --stacktrace
+        run: |
+          echo "Running build and tests..."
+          ./gradlew clean build -x checkstyleMain -x checkstyleTest -x spotlessCheck --stacktrace || {
+            echo "Build failed!"
+            exit 1
+          }
 
       - name: JaCoCo 리포트 생성
-        run: ./gradlew jacocoTestReport
+        run: |
+          echo "Generating JaCoCo report..."
+          ./gradlew jacocoTestReport --stacktrace || {
+            echo "JaCoCo report generation failed!"
+            exit 1
+          }
+
+      - name: JaCoCo 커버리지 검증
+        run: |
+          echo "Verifying JaCoCo coverage..."
+          ./gradlew jacocoTestCoverageVerification --stacktrace || {
+            echo "JaCoCo coverage verification failed!"
+            echo "Coverage report location: build/reports/jacoco/test/html/index.html"
+            exit 1
+          }
 
       - name: SonarQube 분석 (선택사항)
         if: env.SONAR_TOKEN != ''
