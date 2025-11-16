@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: assignment
+
+  profiles:
+    active: default
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /docs
+    display-request-duration: true
+  api-docs:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:mysql://db:3306/assignment?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8&serverTimezone=UTC
+    username: assignment
+    password: assignment
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+    open-in-view: false
+
+springdoc:
+  swagger-ui:
+    path: /docs

@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: assignment-mysql
+    environment:
+      MYSQL_DATABASE: assignment
+      MYSQL_USER: assignment
+      MYSQL_PASSWORD: assignment
+      MYSQL_ROOT_PASSWORD: rootpassword
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD | grep 'mysqld is alive' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  wiremock:
+    image: wiremock/wiremock:3.5.2
+    container_name: assignment-wiremock
+    ports:
+      - "8089:8080"
+    command:
+      - --verbose
+
+  sonarqube:
+    image: sonarqube:10.7.0-community
+    container_name: assignment-sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+
+  app:
+    build:
+      context: .
+    container_name: assignment-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8081:8080"
+
+volumes:
+  db-data:
