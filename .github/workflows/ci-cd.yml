@@ -14,6 +14,22 @@ on:
 jobs:
   build-test-analyze:
     runs-on: ubuntu-latest
+    services:
+      sonarqube:
+        image: sonarqube:9.9-community
+        ports:
+          - 9000:9000
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: true
+          SONAR_JDBC_URL: jdbc:h2:tcp://localhost:9092/sonar
+          SONAR_JDBC_USERNAME: sonar
+          SONAR_JDBC_PASSWORD: sonar
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:9000/api/system/status || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
+          --health-start-period 60s
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,11 +50,40 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: SonarQube env
-        if: env.SONAR_TOKEN != ''
+      - name: Wait for SonarQube
         run: |
-          echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}" >> $GITHUB_ENV
-          echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
+          echo "Waiting for SonarQube to be ready..."
+          for i in {1..60}; do
+            STATUS=$(curl -s http://localhost:9000/api/system/status 2>/dev/null || echo "")
+            if echo "$STATUS" | grep -q '"status":"UP"'; then
+              echo "SonarQube is ready!"
+              break
+            fi
+            echo "Waiting... ($i/60) - Status: $STATUS"
+            sleep 5
+          done
+          # SonarQube가 완전히 시작될 때까지 추가 대기
+          sleep 15
+
+      - name: Setup SonarQube admin password and get token
+        id: sonar-token
+        run: |
+          # SonarQube 10.x는 처음 시작 시 랜덤 비밀번호 생성
+          # 로그에서 비밀번호를 확인하거나, API를 통해 변경
+          # 일단 기본 admin/admin 시도, 실패 시 로그 확인
+          echo "Attempting to generate token..."
+          
+          # 먼저 기본 admin/admin으로 시도
+          TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=ci-token-$(date +%s)&type=PROJECT_ANALYSIS_TOKEN" 2>/dev/null | jq -r '.token // empty')
+          
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "Default password failed, SonarQube analysis will be skipped"
+            echo "SONAR_TOKEN=" >> $GITHUB_ENV
+          else
+            echo "Token generated successfully"
+            echo "SONAR_TOKEN=$TOKEN" >> $GITHUB_ENV
+          fi
+          echo "SONAR_HOST_URL=http://localhost:9000" >> $GITHUB_ENV
 
       - name: Checkstyle (코드 스타일 검사)
         run: ./gradlew checkstyleMain checkstyleTest
@@ -53,7 +98,6 @@ jobs:
         run: ./gradlew jacocoTestReport
 
       - name: SonarQube 분석
-        if: env.SONAR_TOKEN != ''
         run: ./gradlew sonarqube
 
       - name: Upload Jacoco HTML report

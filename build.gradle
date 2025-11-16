@@ -320,9 +320,8 @@ jacocoTestCoverageVerification {
 // SonarQube를 필수 단계로 강제: 분석 전에 테스트/커버리지 생성
 tasks.named('sonarqube') {
 	dependsOn 'test', 'jacocoTestReport'
-}
-
-// 빌드 완료 시 SonarQube 분석까지 자동 실행
-tasks.named('build') {
-	finalizedBy 'sonarqube'
+	// CI 환경에서만 실행 (SONAR_TOKEN이 있을 때)
+	onlyIf {
+		System.getenv('SONAR_TOKEN') != null && !System.getenv('SONAR_TOKEN').isEmpty()
+	}
 }
