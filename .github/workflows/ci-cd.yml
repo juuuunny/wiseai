@@ -99,7 +99,17 @@ jobs:
 
       - name: SonarQube 분석 (선택사항)
         if: env.SONAR_TOKEN != ''
-        run: ./gradlew sonarqube
+        run: |
+          echo "========================================="
+          echo "Step: SonarQube 분석"
+          echo "========================================="
+          echo "SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}"
+          echo "SONAR_ORGANIZATION: ${{ env.SONAR_ORGANIZATION }}"
+          ./gradlew sonarqube --stacktrace || {
+            echo "⚠️ SonarQube analysis failed, but continuing..."
+            exit 0
+          }
+          echo "✅ SonarQube analysis completed successfully"
         continue-on-error: true
 
       - name: Upload Jacoco HTML report
