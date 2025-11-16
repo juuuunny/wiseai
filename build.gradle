@@ -107,8 +107,8 @@ tasks.named('test') {
 // ===== SonarQube 설정 =====
 sonarqube {
 	properties {
-		property "sonar.projectKey", "assignment"
-		property "sonar.projectName", "assignment"
+		property "sonar.projectKey", "juuuunny_wiseai"
+		property "sonar.projectName", "wiseai"
 		property "sonar.host.url", System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
 		property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
 		property "sonar.sources", "src/main/java"
