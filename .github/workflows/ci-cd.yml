@@ -35,11 +35,14 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup SonarQube (선택사항)
-        if: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}" >> $GITHUB_ENV
-          echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
-          echo "SonarQube secrets configured"
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}" >> $GITHUB_ENV
+            echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
+            echo "SonarQube secrets configured"
+          else
+            echo "SONAR_TOKEN not set, SonarQube analysis will be skipped"
+          fi
         continue-on-error: true
 
       - name: Checkstyle (코드 스타일 검사)
