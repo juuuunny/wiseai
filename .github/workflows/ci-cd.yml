@@ -84,17 +84,12 @@ jobs:
 
       - name: JaCoCo 커버리지 검증
         run: |
-          echo "Verifying JaCoCo coverage..."
-          ./gradlew jacocoTestCoverageVerification --stacktrace || {
-            echo "⚠️ JaCoCo coverage verification failed!"
-            echo "Coverage report location: build/reports/jacoco/test/html/index.html"
-            echo "This is treated as a warning in CI - build will continue"
-            # 커버리지 리포트가 있으면 내용 출력
-            if [ -f "build/reports/jacoco/test/jacocoTestReport.xml" ]; then
-              echo "Coverage report exists, checking coverage..."
-            fi
-          }
-        continue-on-error: true
+          echo "========================================="
+          echo "Step: JaCoCo 커버리지 검증"
+          echo "========================================="
+          echo "최소 커버리지 기준: 30%"
+          ./gradlew jacocoTestCoverageVerification --stacktrace
+          echo "✅ JaCoCo coverage verification passed"
 
       - name: SonarQube 분석 (선택사항)
         if: env.SONAR_TOKEN != ''
