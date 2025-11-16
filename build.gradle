@@ -320,8 +320,12 @@ jacocoTestCoverageVerification {
 // SonarQube를 필수 단계로 강제: 분석 전에 테스트/커버리지 생성
 tasks.named('sonarqube') {
 	dependsOn 'test', 'jacocoTestReport'
-	// CI 환경에서만 실행 (SONAR_TOKEN이 있을 때)
+	// SONAR_TOKEN이 있을 때만 실행 (로컬/CI 모두)
+	// 로컬: docker-compose up으로 SonarQube 실행 후 토큰 설정 필요
+	//   예: export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" | jq -r '.token')
+	// CI: GitHub Actions에서 자동으로 토큰 생성
 	onlyIf {
-		System.getenv('SONAR_TOKEN') != null && !System.getenv('SONAR_TOKEN').isEmpty()
+		def token = System.getenv('SONAR_TOKEN')
+		return token != null && !token.isEmpty()
 	}
 }

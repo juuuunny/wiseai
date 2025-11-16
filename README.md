@@ -179,24 +179,53 @@ open build/reports/jacoco/test/html/index.html
 
 **로컬 SonarQube 사용 시**:
 
-1. SonarQube 토큰 발급:
+1. SonarQube 실행:
 
+```bash
+docker-compose up -d sonarqube
+```
+
+2. SonarQube 준비 대기 (약 1-2분):
+
+```bash
+# SonarQube가 준비될 때까지 대기
+curl -f http://localhost:9000/api/system/status
+```
+
+3. SonarQube 토큰 발급:
+
+   **방법 1: 웹 UI 사용**
    - http://localhost:9000 접속
-   - 로그인: `admin` / `WiseAi1234@@`
-   - My Account → Security → Generate Token
+   - 첫 실행 시: 초기 비밀번호 확인 (로그에서 확인)
+   - 로그인 후: My Account → Security → Generate Token
 
-2. 환경변수 설정:
+   **방법 2: API 사용 (자동화)**
+
+```bash
+# SonarQube 10.x: 초기 비밀번호 확인 필요 (로그에서 확인)
+# SonarQube 9.x: 기본 admin/admin 사용 가능
+export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" 2>/dev/null | jq -r '.token // empty')
+
+# 토큰이 생성되었는지 확인
+echo "SONAR_TOKEN=$SONAR_TOKEN"
+```
+
+4. 환경변수 설정:
 
 ```bash
 export SONAR_HOST_URL=http://localhost:9000
-export SONAR_TOKEN=<발급받은_토큰>
+export SONAR_TOKEN=<발급받은_토큰>  # 위에서 생성한 토큰
 ```
 
-3. 빌드 (자동으로 SonarQube 분석까지 실행):
+5. 빌드 (자동으로 SonarQube 분석까지 실행):
 
 ```bash
 ./gradlew clean build
+# 또는 SonarQube만 실행
+./gradlew sonarqube
 ```
+
+**참고**: `SONAR_TOKEN`이 설정되지 않으면 SonarQube 분석은 스킵되지만 빌드는 정상적으로 완료됩니다.
 
 **SonarQube 대시보드**: http://localhost:9000/projects?query=assignment
 
