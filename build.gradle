@@ -206,8 +206,9 @@ spotless {
 	// YAML 파일 포맷팅 - 들여쓰기 및 구조 정리
 	format 'yaml', {
 		target '*.yml', '*.yaml'
+		targetExclude 'docker-compose.yml', 'docker-compose.aws.yml'  // Docker Compose는 스페이스 2칸 사용
 		trimTrailingWhitespace()
-		indentWithTabs()
+		indentWithSpaces(2)  // YAML 표준: 스페이스 2칸
 		endWithNewline()
 	}
 
