@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Setup SonarQube (선택사항)
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: ${{ secrets.SONAR_TOKEN }}
         run: |
           echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}" >> $GITHUB_ENV
           echo "SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}" >> $GITHUB_ENV
