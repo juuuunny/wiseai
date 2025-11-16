@@ -109,17 +109,17 @@ sonarqube {
 	properties {
 		property "sonar.projectKey", "juuuunny_wiseai"
 		property "sonar.projectName", "wiseai"
-		
+
 		def sonarHostUrl = System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
 		property "sonar.host.url", sonarHostUrl
 		property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
-		
+
 		// SonarQube Cloud를 사용하는 경우 organization 필수
 		def sonarOrganization = System.getenv("SONAR_ORGANIZATION")
 		if (sonarOrganization) {
 			property "sonar.organization", sonarOrganization
 		}
-		
+
 		property "sonar.sources", "src/main/java"
 		property "sonar.tests", "src/test/java"
 		property "sonar.java.binaries", "build/classes/java/main"
