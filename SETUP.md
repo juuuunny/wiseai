@@ -79,6 +79,7 @@ SONAR_TOKEN
 ```
 
 **설정하지 않을 경우**:
+
 - GitHub Actions에서 SonarQube 분석은 스킵됩니다
 - 빌드, 테스트, Checkstyle, Spotless, JaCoCo는 정상 실행됩니다
 - 로컬에서는 `SONAR_TOKEN` 환경변수 설정 시에만 SonarQube 분석 실행
