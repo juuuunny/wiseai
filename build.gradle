@@ -186,8 +186,13 @@ spotless {
 		trimTrailingWhitespace()  // 줄 끝 공백 자동 제거
 		endWithNewline()          // 파일 끝 개행 문자로 통일
 
-		// QueryDSL 생성 파일 제외
-		targetExclude('**/Q*.java')
+		// 생성 파일 및 빌드 산출물 제외
+		targetExclude(
+			'**/Q*.java',              // QueryDSL 생성 파일
+			'**/generated/**',         // 생성된 소스 파일
+			'build/**',                // 빌드 산출물
+			'.gradle/**'               // Gradle 캐시
+		)
 	}
 
 	// Spotless 태스크 의존성 설정
@@ -198,6 +203,11 @@ spotless {
 	// XML 파일 포맷팅 - 들여쓰기 및 구조 정리
 	format 'xml', {
 		target '*.xml'
+		targetExclude(
+			'build/**',                // 빌드 산출물
+			'.gradle/**',              // Gradle 캐시
+			'**/generated/**'          // 생성된 파일
+		)
 		trimTrailingWhitespace()
 		indentWithTabs()
 		endWithNewline()
@@ -206,7 +216,12 @@ spotless {
 	// YAML 파일 포맷팅 - 들여쓰기 및 구조 정리
 	format 'yaml', {
 		target '*.yml', '*.yaml'
-		targetExclude 'docker-compose.yml', 'docker-compose.aws.yml'  // Docker Compose는 스페이스 2칸 사용
+		targetExclude(
+			'docker-compose.yml',      // Docker Compose는 스페이스 2칸 사용
+			'docker-compose.aws.yml',
+			'build/**',                // 빌드 산출물
+			'.gradle/**'               // Gradle 캐시
+		)
 		trimTrailingWhitespace()
 		indentWithSpaces(2)  // YAML 표준: 스페이스 2칸
 		endWithNewline()
@@ -215,6 +230,10 @@ spotless {
 	// Gradle 파일 포맷팅 - 들여쓰기 및 설정 정리
 	format 'gradle', {
 		target '*.gradle', '*.gradle.kts'
+		targetExclude(
+			'build/**',                // 빌드 산출물
+			'.gradle/**'               // Gradle 캐시
+		)
 		trimTrailingWhitespace()
 		indentWithTabs()
 		endWithNewline()
@@ -223,6 +242,10 @@ spotless {
 	// Markdown 파일 포맷팅 - 공백 및 줄바꿈 정리
 	format 'markdown', {
 		target '*.md'
+		targetExclude(
+			'build/**',                // 빌드 산출물
+			'.gradle/**'               // Gradle 캐시
+		)
 		trimTrailingWhitespace()
 		endWithNewline()
 	}
@@ -230,6 +253,12 @@ spotless {
 	// 기타 파일 포맷팅
 	format 'misc', {
 		target '*.properties', '*.json', '*.sql'
+		targetExclude(
+			'build/**',                // 빌드 산출물
+			'.gradle/**',              // Gradle 캐시
+			'gradle-wrapper.jar',      // 바이너리 파일
+			'**/node_modules/**'       // Node 모듈 (만약 있다면)
+		)
 		trimTrailingWhitespace()
 		indentWithTabs()
 		endWithNewline()
