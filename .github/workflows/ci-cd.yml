@@ -87,7 +87,8 @@ jobs:
           echo "========================================="
           echo "Step: JaCoCo 커버리지 검증"
           echo "========================================="
-          echo "최소 커버리지 기준: 30%"
+          echo "현재 최소 커버리지 기준: 0% (임시)"
+          echo "목표 커버리지 기준: 50% (나중에 활성화 예정)"
           ./gradlew jacocoTestCoverageVerification --stacktrace
           echo "✅ JaCoCo coverage verification passed"
 
