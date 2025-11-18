@@ -3,12 +3,13 @@ package com.wiseai.assignment.modules.user.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import com.wiseai.assignment.modules.user.domain.enums.RoleType;
 import com.wiseai.assignment.modules.user.domain.exception.UserException;
 import com.wiseai.assignment.modules.user.domain.model.User;
 import com.wiseai.assignment.modules.user.domain.status.UserErrorStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 class UserTest {
 
@@ -41,4 +42,3 @@ class UserTest {
         .hasMessage(UserErrorStatus.INVALID_CREDENTIAL.getMessage());
   }
 }
-

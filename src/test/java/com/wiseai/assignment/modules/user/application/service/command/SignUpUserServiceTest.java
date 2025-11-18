@@ -7,6 +7,15 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.wiseai.assignment.modules.auth.application.dto.response.ReIssueTokenResponse;
 import com.wiseai.assignment.modules.user.application.dto.request.SelfSignUpRequest;
 import com.wiseai.assignment.modules.user.application.port.out.auth.JwtGeneratePort;
@@ -16,14 +25,6 @@ import com.wiseai.assignment.modules.user.application.port.out.command.UserComma
 import com.wiseai.assignment.modules.user.domain.exception.UserException;
 import com.wiseai.assignment.modules.user.domain.model.User;
 import com.wiseai.assignment.modules.user.domain.status.UserErrorStatus;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class SignUpUserServiceTest {
@@ -105,4 +106,3 @@ class SignUpUserServiceTest {
         .hasMessage(UserErrorStatus.PASSWORD_CONFIRM_NOT_MATCH.getMessage());
   }
 }
-

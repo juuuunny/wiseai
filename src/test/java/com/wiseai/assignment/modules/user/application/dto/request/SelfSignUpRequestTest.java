@@ -3,9 +3,10 @@ package com.wiseai.assignment.modules.user.application.dto.request;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.wiseai.assignment.modules.user.domain.exception.UserException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.wiseai.assignment.modules.user.domain.exception.UserException;
 
 class SelfSignUpRequestTest {
 
@@ -27,4 +28,3 @@ class SelfSignUpRequestTest {
     assertThatThrownBy(request::validatePasswordMatch).isInstanceOf(UserException.class);
   }
 }
-

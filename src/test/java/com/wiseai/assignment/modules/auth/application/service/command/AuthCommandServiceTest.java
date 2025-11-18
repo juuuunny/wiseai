@@ -6,6 +6,13 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.wiseai.assignment.modules.auth.application.dto.request.SelfLoginRequest;
 import com.wiseai.assignment.modules.auth.application.dto.response.ReIssueTokenResponse;
 import com.wiseai.assignment.modules.auth.application.port.out.jwt.JwtGeneratorPort;
@@ -16,12 +23,6 @@ import com.wiseai.assignment.modules.auth.domain.exception.AuthException;
 import com.wiseai.assignment.modules.auth.domain.status.AuthErrorStatus;
 import com.wiseai.assignment.modules.user.domain.enums.RoleType;
 import com.wiseai.assignment.modules.user.domain.model.vo.UserInfo;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AuthCommandServiceTest {
@@ -133,4 +134,3 @@ class AuthCommandServiceTest {
         .hasMessage(AuthErrorStatus.BAD_REQUEST_LOGIN.getMessage());
   }
 }
-

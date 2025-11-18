@@ -25,6 +25,5 @@ public record SelfSignUpWebRequest(
                 "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$",
             message = "비밀번호는 영문, 숫자, 특수문자가 포함된 8자리 이상 문자열입니다.")
         String passwordConfirm,
-    @Schema(description = "이름", example = "테스트사용자")
-        @NotBlank(message = "이름을 입력해주세요.")
+    @Schema(description = "이름", example = "테스트사용자") @NotBlank(message = "이름을 입력해주세요.")
         String name) {}

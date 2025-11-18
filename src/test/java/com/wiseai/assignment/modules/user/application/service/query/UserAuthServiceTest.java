@@ -4,13 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
-import com.wiseai.assignment.modules.user.application.port.out.query.UserQueryPort;
-import com.wiseai.assignment.modules.user.domain.enums.RoleType;
-import com.wiseai.assignment.modules.user.domain.exception.UserException;
-import com.wiseai.assignment.modules.user.domain.model.User;
-import com.wiseai.assignment.modules.user.domain.model.vo.UserInfo;
-import com.wiseai.assignment.modules.user.domain.status.UserErrorStatus;
 import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +13,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.wiseai.assignment.modules.user.application.port.out.query.UserQueryPort;
+import com.wiseai.assignment.modules.user.domain.enums.RoleType;
+import com.wiseai.assignment.modules.user.domain.exception.UserException;
+import com.wiseai.assignment.modules.user.domain.model.User;
+import com.wiseai.assignment.modules.user.domain.model.vo.UserInfo;
+import com.wiseai.assignment.modules.user.domain.status.UserErrorStatus;
 
 @ExtendWith(MockitoExtension.class)
 class UserAuthServiceTest {
@@ -84,4 +86,3 @@ class UserAuthServiceTest {
         .hasMessage(UserErrorStatus.INVALID_CREDENTIAL.getMessage());
   }
 }
-
