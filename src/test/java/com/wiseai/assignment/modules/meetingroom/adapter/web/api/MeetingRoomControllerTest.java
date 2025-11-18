@@ -49,14 +49,30 @@ class MeetingRoomControllerTest {
   @MockBean private GetMeetingRoomsUseCase getMeetingRoomsUseCase;
   @MockBean private GetMeetingRoomUseCase getMeetingRoomUseCase;
 
+  // 공통 테스트 데이터
+  private static final Long ROOM_ID_1 = 1L;
+  private static final Long ROOM_ID_2 = 2L;
+  private static final Long ROOM_ID_NOT_FOUND = 999L;
+  private static final String ROOM_NAME_A = "회의실 A";
+  private static final String ROOM_NAME_B = "회의실 B";
+  private static final String ROOM_DESCRIPTION_1 = "설명1";
+  private static final String ROOM_DESCRIPTION_2 = "설명2";
+  private static final String ROOM_DESCRIPTION = "설명";
+  private static final int CAPACITY_10 = 10;
+  private static final int CAPACITY_20 = 20;
+  private static final BigDecimal FEE_10000 = new BigDecimal("10000");
+  private static final BigDecimal FEE_20000 = new BigDecimal("20000");
+  private static final int JSON_FEE_10000 = 10000;
+  private static final int JSON_FEE_20000 = 20000;
+
   @Test
   @DisplayName("회의실 목록 조회 성공")
   void getMeetingRooms_success() throws Exception {
     // given
     MeetingRoomResponse room1 =
-        new MeetingRoomResponse(1L, "회의실 A", 10, new BigDecimal("10000"), "설명1");
+        new MeetingRoomResponse(ROOM_ID_1, ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION_1);
     MeetingRoomResponse room2 =
-        new MeetingRoomResponse(2L, "회의실 B", 20, new BigDecimal("20000"), "설명2");
+        new MeetingRoomResponse(ROOM_ID_2, ROOM_NAME_B, CAPACITY_20, FEE_20000, ROOM_DESCRIPTION_2);
 
     given(getMeetingRoomsUseCase.getAllMeetingRooms()).willReturn(List.of(room1, room2));
 
@@ -69,16 +85,16 @@ class MeetingRoomControllerTest {
         .andExpect(jsonPath("$.code").value("MEETINGROOM-001"))
         .andExpect(jsonPath("$.message").value("회의실 목록 조회에 성공했습니다."))
         .andExpect(jsonPath("$.data").isArray())
-        .andExpect(jsonPath("$.data[0].id").value(1))
-        .andExpect(jsonPath("$.data[0].name").value("회의실 A"))
-        .andExpect(jsonPath("$.data[0].capacity").value(10))
-        .andExpect(jsonPath("$.data[0].hourlyFee").value(10000))
-        .andExpect(jsonPath("$.data[0].description").value("설명1"))
-        .andExpect(jsonPath("$.data[1].id").value(2))
-        .andExpect(jsonPath("$.data[1].name").value("회의실 B"))
-        .andExpect(jsonPath("$.data[1].capacity").value(20))
-        .andExpect(jsonPath("$.data[1].hourlyFee").value(20000))
-        .andExpect(jsonPath("$.data[1].description").value("설명2"));
+        .andExpect(jsonPath("$.data[0].id").value(ROOM_ID_1))
+        .andExpect(jsonPath("$.data[0].name").value(ROOM_NAME_A))
+        .andExpect(jsonPath("$.data[0].capacity").value(CAPACITY_10))
+        .andExpect(jsonPath("$.data[0].hourlyFee").value(JSON_FEE_10000))
+        .andExpect(jsonPath("$.data[0].description").value(ROOM_DESCRIPTION_1))
+        .andExpect(jsonPath("$.data[1].id").value(ROOM_ID_2))
+        .andExpect(jsonPath("$.data[1].name").value(ROOM_NAME_B))
+        .andExpect(jsonPath("$.data[1].capacity").value(CAPACITY_20))
+        .andExpect(jsonPath("$.data[1].hourlyFee").value(JSON_FEE_20000))
+        .andExpect(jsonPath("$.data[1].description").value(ROOM_DESCRIPTION_2));
   }
 
   @Test
@@ -102,9 +118,9 @@ class MeetingRoomControllerTest {
   @DisplayName("회의실 단건 조회 성공")
   void getMeetingRoom_success() throws Exception {
     // given
-    Long id = 1L;
+    Long id = ROOM_ID_1;
     MeetingRoomResponse meetingRoom =
-        new MeetingRoomResponse(id, "회의실 A", 10, new BigDecimal("10000"), "설명");
+        new MeetingRoomResponse(id, ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION);
 
     given(getMeetingRoomUseCase.getMeetingRoom(id)).willReturn(meetingRoom);
 
@@ -116,18 +132,18 @@ class MeetingRoomControllerTest {
         .andExpect(jsonPath("$.httpStatus").value(200))
         .andExpect(jsonPath("$.code").value("MEETINGROOM-002"))
         .andExpect(jsonPath("$.message").value("회의실 조회에 성공했습니다."))
-        .andExpect(jsonPath("$.data.id").value(1))
-        .andExpect(jsonPath("$.data.name").value("회의실 A"))
-        .andExpect(jsonPath("$.data.capacity").value(10))
-        .andExpect(jsonPath("$.data.hourlyFee").value(10000))
-        .andExpect(jsonPath("$.data.description").value("설명"));
+        .andExpect(jsonPath("$.data.id").value(ROOM_ID_1))
+        .andExpect(jsonPath("$.data.name").value(ROOM_NAME_A))
+        .andExpect(jsonPath("$.data.capacity").value(CAPACITY_10))
+        .andExpect(jsonPath("$.data.hourlyFee").value(JSON_FEE_10000))
+        .andExpect(jsonPath("$.data.description").value(ROOM_DESCRIPTION));
   }
 
   @Test
   @DisplayName("회의실 단건 조회 실패 - 존재하지 않는 ID")
   void getMeetingRoom_notFound() throws Exception {
     // given
-    Long id = 999L;
+    Long id = ROOM_ID_NOT_FOUND;
     given(getMeetingRoomUseCase.getMeetingRoom(id))
         .willThrow(new MeetingRoomException(MeetingRoomErrorStatus.NOT_FOUND));
 

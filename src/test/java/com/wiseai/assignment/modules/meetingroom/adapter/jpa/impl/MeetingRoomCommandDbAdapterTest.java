@@ -28,43 +28,56 @@ class MeetingRoomCommandDbAdapterTest {
 
   @Autowired private MeetingRoomCommandDbAdapter meetingRoomCommandDbAdapter;
 
+  // 공통 테스트 데이터
+  private static final String ROOM_NAME_A = "회의실 A";
+  private static final String ROOM_NAME_B = "회의실 B";
+  private static final String ROOM_DESCRIPTION = "설명";
+  private static final String ROOM_DESCRIPTION_UPDATED = "수정된 설명";
+  private static final int CAPACITY_10 = 10;
+  private static final int CAPACITY_20 = 20;
+  private static final BigDecimal FEE_10000 = new BigDecimal("10000");
+  private static final BigDecimal FEE_20000 = new BigDecimal("20000");
+  private static final Long ROOM_ID_NOT_FOUND = 999L;
+
   @Test
   @DisplayName("회의실 저장 성공")
   void save_success() {
     // given
-    MeetingRoom meetingRoom = MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoom meetingRoom =
+        MeetingRoom.create(ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION);
 
     // when
     MeetingRoom saved = meetingRoomCommandDbAdapter.save(meetingRoom);
 
     // then
     assertThat(saved.getId()).isNotNull();
-    assertThat(saved.getName()).isEqualTo("회의실 A");
-    assertThat(saved.getCapacity()).isEqualTo(10);
-    assertThat(saved.getHourlyFee()).isEqualByComparingTo(new BigDecimal("10000"));
-    assertThat(saved.getDescription()).isEqualTo("설명");
+    assertThat(saved.getName()).isEqualTo(ROOM_NAME_A);
+    assertThat(saved.getCapacity()).isEqualTo(CAPACITY_10);
+    assertThat(saved.getHourlyFee()).isEqualByComparingTo(FEE_10000);
+    assertThat(saved.getDescription()).isEqualTo(ROOM_DESCRIPTION);
   }
 
   @Test
   @DisplayName("회의실 수정 성공")
   void update_success() {
     // given
-    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity =
+        new MeetingRoomEntity(ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION);
     MeetingRoomEntity savedEntity = meetingRoomJpaRepository.save(entity);
     MeetingRoom saved = meetingRoomEntityMapper.toDomain(savedEntity);
 
     MeetingRoom updatedMeetingRoom =
-        saved.updateInfo("회의실 B", 20, new BigDecimal("20000"), "수정된 설명");
+        saved.updateInfo(ROOM_NAME_B, CAPACITY_20, FEE_20000, ROOM_DESCRIPTION_UPDATED);
 
     // when
     MeetingRoom updated = meetingRoomCommandDbAdapter.update(updatedMeetingRoom);
 
     // then
     assertThat(updated.getId()).isEqualTo(saved.getId());
-    assertThat(updated.getName()).isEqualTo("회의실 B");
-    assertThat(updated.getCapacity()).isEqualTo(20);
-    assertThat(updated.getHourlyFee()).isEqualByComparingTo(new BigDecimal("20000"));
-    assertThat(updated.getDescription()).isEqualTo("수정된 설명");
+    assertThat(updated.getName()).isEqualTo(ROOM_NAME_B);
+    assertThat(updated.getCapacity()).isEqualTo(CAPACITY_20);
+    assertThat(updated.getHourlyFee()).isEqualByComparingTo(FEE_20000);
+    assertThat(updated.getDescription()).isEqualTo(ROOM_DESCRIPTION_UPDATED);
   }
 
   @Test
@@ -73,24 +86,25 @@ class MeetingRoomCommandDbAdapterTest {
     // given
     MeetingRoom meetingRoom =
         MeetingRoom.builder()
-            .id(999L)
-            .name("회의실 A")
-            .capacity(10)
-            .hourlyFee(new BigDecimal("10000"))
-            .description("설명")
+            .id(ROOM_ID_NOT_FOUND)
+            .name(ROOM_NAME_A)
+            .capacity(CAPACITY_10)
+            .hourlyFee(FEE_10000)
+            .description(ROOM_DESCRIPTION)
             .build();
 
     // when & then
     assertThatThrownBy(() -> meetingRoomCommandDbAdapter.update(meetingRoom))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("MeetingRoom not found with id: 999");
+        .hasMessageContaining("MeetingRoom not found with id: " + ROOM_ID_NOT_FOUND);
   }
 
   @Test
   @DisplayName("회의실 삭제 성공")
   void delete_success() {
     // given
-    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity =
+        new MeetingRoomEntity(ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION);
     MeetingRoomEntity saved = meetingRoomJpaRepository.save(entity);
     Long id = saved.getId();
 

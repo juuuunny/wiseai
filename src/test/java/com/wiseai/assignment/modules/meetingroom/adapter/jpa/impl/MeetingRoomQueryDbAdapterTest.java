@@ -27,6 +27,18 @@ class MeetingRoomQueryDbAdapterTest {
 
   @Autowired private MeetingRoomQueryDbAdapter meetingRoomQueryDbAdapter;
 
+  // 공통 테스트 데이터
+  private static final String ROOM_NAME_A = "회의실 A";
+  private static final String ROOM_NAME_B = "회의실 B";
+  private static final String ROOM_DESCRIPTION_1 = "설명1";
+  private static final String ROOM_DESCRIPTION_2 = "설명2";
+  private static final String ROOM_DESCRIPTION = "설명";
+  private static final int CAPACITY_10 = 10;
+  private static final int CAPACITY_20 = 20;
+  private static final BigDecimal FEE_10000 = new BigDecimal("10000");
+  private static final BigDecimal FEE_20000 = new BigDecimal("20000");
+  private static final Long ROOM_ID_NOT_FOUND = 999L;
+
   @BeforeEach
   void setUp() {
     meetingRoomJpaRepository.deleteAll();
@@ -36,8 +48,10 @@ class MeetingRoomQueryDbAdapterTest {
   @DisplayName("전체 회의실 조회 성공")
   void findAll_success() {
     // given
-    MeetingRoomEntity entity1 = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명1");
-    MeetingRoomEntity entity2 = new MeetingRoomEntity("회의실 B", 20, new BigDecimal("20000"), "설명2");
+    MeetingRoomEntity entity1 =
+        new MeetingRoomEntity(ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION_1);
+    MeetingRoomEntity entity2 =
+        new MeetingRoomEntity(ROOM_NAME_B, CAPACITY_20, FEE_20000, ROOM_DESCRIPTION_2);
     meetingRoomJpaRepository.save(entity1);
     meetingRoomJpaRepository.save(entity2);
 
@@ -46,8 +60,8 @@ class MeetingRoomQueryDbAdapterTest {
 
     // then
     assertThat(result).hasSize(2);
-    assertThat(result.get(0).getName()).isEqualTo("회의실 A");
-    assertThat(result.get(1).getName()).isEqualTo("회의실 B");
+    assertThat(result.get(0).getName()).isEqualTo(ROOM_NAME_A);
+    assertThat(result.get(1).getName()).isEqualTo(ROOM_NAME_B);
   }
 
   @Test
@@ -64,7 +78,8 @@ class MeetingRoomQueryDbAdapterTest {
   @DisplayName("ID로 회의실 조회 성공")
   void findById_success() {
     // given
-    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity =
+        new MeetingRoomEntity(ROOM_NAME_A, CAPACITY_10, FEE_10000, ROOM_DESCRIPTION);
     MeetingRoomEntity saved = meetingRoomJpaRepository.save(entity);
     Long id = saved.getId();
 
@@ -73,17 +88,17 @@ class MeetingRoomQueryDbAdapterTest {
 
     // then
     assertThat(result.getId()).isEqualTo(id);
-    assertThat(result.getName()).isEqualTo("회의실 A");
-    assertThat(result.getCapacity()).isEqualTo(10);
-    assertThat(result.getHourlyFee()).isEqualByComparingTo(new BigDecimal("10000"));
-    assertThat(result.getDescription()).isEqualTo("설명");
+    assertThat(result.getName()).isEqualTo(ROOM_NAME_A);
+    assertThat(result.getCapacity()).isEqualTo(CAPACITY_10);
+    assertThat(result.getHourlyFee()).isEqualByComparingTo(FEE_10000);
+    assertThat(result.getDescription()).isEqualTo(ROOM_DESCRIPTION);
   }
 
   @Test
   @DisplayName("ID로 회의실 조회 실패 - 존재하지 않는 ID")
   void findById_notFound() {
     // when
-    var result = meetingRoomQueryDbAdapter.findById(999L);
+    var result = meetingRoomQueryDbAdapter.findById(ROOM_ID_NOT_FOUND);
 
     // then
     assertThat(result).isEmpty();
