@@ -97,6 +97,13 @@ public class Payment {
   }
 
   public Payment cancel() {
+    if (status == PaymentStatus.COMPLETED) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
+    if (status == PaymentStatus.CANCELLED) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
+
     return Payment.builder()
         .id(id)
         .reservationId(reservationId)
