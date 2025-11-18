@@ -20,6 +20,8 @@ class MeetingRoomTest {
   private static final BigDecimal FEE_20000 = new BigDecimal("20000");
   private static final BigDecimal FEE_25000 = new BigDecimal("25000");
   private static final BigDecimal FEE_NEGATIVE = new BigDecimal("-1");
+  private static final int TEST_MINUTES_90 = 90;
+  private static final int EXPECTED_FEE_18000 = 18000;
 
   @Test
   @DisplayName("회의실 생성 성공")
@@ -81,9 +83,9 @@ class MeetingRoomTest {
   void calculateFee_success() {
     MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 4, FEE_12000, null);
 
-    BigDecimal fee = meetingRoom.calculateFee(90);
+    BigDecimal fee = meetingRoom.calculateFee(TEST_MINUTES_90);
 
-    assertThat(fee).isEqualTo(new BigDecimal("18000"));
+    assertThat(fee).isEqualTo(new BigDecimal(String.valueOf(EXPECTED_FEE_18000)));
   }
 
   @Test

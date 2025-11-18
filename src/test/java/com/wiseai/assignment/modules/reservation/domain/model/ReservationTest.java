@@ -29,6 +29,8 @@ class ReservationTest {
       LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
   private static final BigDecimal DEFAULT_TOTAL_AMOUNT = new BigDecimal("10000");
   private static final BigDecimal SECOND_TOTAL_AMOUNT = new BigDecimal("15000");
+  private static final int TEST_MINUTE_15 = 15;
+  private static final int TEST_MINUTE_45 = 45;
 
   @Test
   @DisplayName("예약 생성 성공")
@@ -127,7 +129,7 @@ class ReservationTest {
     // given
     Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
     Long userId = DEFAULT_USER_ID;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 15);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, TEST_MINUTE_15);
     LocalDateTime endTime = DEFAULT_END_TIME;
     BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
@@ -145,7 +147,7 @@ class ReservationTest {
     Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
     Long userId = DEFAULT_USER_ID;
     LocalDateTime startTime = DEFAULT_START_TIME;
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 45);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, TEST_MINUTE_45);
     BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then

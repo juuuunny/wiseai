@@ -62,6 +62,8 @@ class MeetingRoomControllerTest {
   private static final int CAPACITY_20 = 20;
   private static final BigDecimal FEE_10000 = new BigDecimal("10000");
   private static final BigDecimal FEE_20000 = new BigDecimal("20000");
+  private static final int JSON_FEE_10000 = 10000;
+  private static final int JSON_FEE_20000 = 20000;
 
   @Test
   @DisplayName("회의실 목록 조회 성공")
@@ -86,12 +88,12 @@ class MeetingRoomControllerTest {
         .andExpect(jsonPath("$.data[0].id").value(ROOM_ID_1))
         .andExpect(jsonPath("$.data[0].name").value(ROOM_NAME_A))
         .andExpect(jsonPath("$.data[0].capacity").value(CAPACITY_10))
-        .andExpect(jsonPath("$.data[0].hourlyFee").value(10000))
+        .andExpect(jsonPath("$.data[0].hourlyFee").value(JSON_FEE_10000))
         .andExpect(jsonPath("$.data[0].description").value(ROOM_DESCRIPTION_1))
         .andExpect(jsonPath("$.data[1].id").value(ROOM_ID_2))
         .andExpect(jsonPath("$.data[1].name").value(ROOM_NAME_B))
         .andExpect(jsonPath("$.data[1].capacity").value(CAPACITY_20))
-        .andExpect(jsonPath("$.data[1].hourlyFee").value(20000))
+        .andExpect(jsonPath("$.data[1].hourlyFee").value(JSON_FEE_20000))
         .andExpect(jsonPath("$.data[1].description").value(ROOM_DESCRIPTION_2));
   }
 
@@ -133,7 +135,7 @@ class MeetingRoomControllerTest {
         .andExpect(jsonPath("$.data.id").value(ROOM_ID_1))
         .andExpect(jsonPath("$.data.name").value(ROOM_NAME_A))
         .andExpect(jsonPath("$.data.capacity").value(CAPACITY_10))
-        .andExpect(jsonPath("$.data.hourlyFee").value(10000))
+        .andExpect(jsonPath("$.data.hourlyFee").value(JSON_FEE_10000))
         .andExpect(jsonPath("$.data.description").value(ROOM_DESCRIPTION));
   }
 
