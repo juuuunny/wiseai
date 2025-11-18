@@ -17,11 +17,20 @@
 	<module name="BeforeExecutionExclusionFileFilter">
 		<property name="fileNamePattern" value=".*/generated/.*"/>
 	</module>
+	<module name="SuppressionFilter">
+		<property name="file" value="${config_loc}/suppressions.xml"/>
+		<property name="optional" value="true"/>
+	</module>
 
 	<!-- QueryDSL 관련 파일들 및 특수 상수 파일들에서 ConstantName 규칙 비활성화 -->
 	<module name="SuppressionSingleFilter">
 		<property name="checks" value="ConstantName"/>
 		<property name="files" value=".*QueryDslAdapter\.java$|.*SortBuilder\.java$|.*PortAdapter\.java$|.*DataDatePredicate\.java$|.*UserAgentParser\.java$"/>
+	</module>
+	<!-- 테스트 파일의 MethodName 규칙 비활성화 -->
+	<module name="SuppressionSingleFilter">
+		<property name="checks" value="MethodName"/>
+		<property name="files" value=".*Test\.java$"/>
 	</module>
 
 	<module name="FileLength">
@@ -109,7 +118,10 @@
 		<module name="LocalFinalVariableName"/>
 		<module name="LocalVariableName"/>
 		<module name="MemberName"/>
-		<module name="MethodName"/>
+		<module name="MethodName">
+			<property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+			<property name="allowClassName" value="true"/>
+		</module>
 		<module name="PackageName"/>
 		<module name="ParameterName"/>
 		<module name="StaticVariableName"/>

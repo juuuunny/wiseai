@@ -15,14 +15,18 @@ import com.wiseai.assignment.modules.reservation.domain.status.ReservationErrorS
 
 class ReservationTest {
 
+  private static final int TEST_YEAR = 2024;
+  private static final int TEST_MONTH = 1;
+  private static final int TEST_DAY = 1;
+
   @Test
   @DisplayName("예약 생성 성공")
   void createReservation_success() {
     // given
     Long meetingRoomId = 1L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when
@@ -44,8 +48,8 @@ class ReservationTest {
     // given
     Long invalidMeetingRoomId = 0L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when & then
@@ -61,8 +65,8 @@ class ReservationTest {
     // given
     Long meetingRoomId = 1L;
     Long invalidUserId = -1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when & then
@@ -78,8 +82,8 @@ class ReservationTest {
     // given
     Long meetingRoomId = 1L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 11, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when & then
@@ -112,8 +116,8 @@ class ReservationTest {
     // given
     Long meetingRoomId = 1L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 15);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 15);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when & then
@@ -129,8 +133,8 @@ class ReservationTest {
     // given
     Long meetingRoomId = 1L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 45);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 45);
     BigDecimal totalAmount = new BigDecimal("10000");
 
     // when & then
@@ -143,8 +147,8 @@ class ReservationTest {
   @Test
   @DisplayName("예약 생성 성공 - 30분 단위 시간")
   void createReservation_success_30minUnit() {
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 30);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 30);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 30);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 30);
 
     Reservation reservation =
         Reservation.create(1L, 1L, startTime, endTime, new BigDecimal("10000"));
@@ -159,8 +163,8 @@ class ReservationTest {
     // given
     Long meetingRoomId = 1L;
     Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 11, 0);
+    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     BigDecimal negativeAmount = new BigDecimal("-1000");
 
     // when & then
@@ -178,8 +182,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation reservationWithId = reservation.withId(1L);
 
@@ -199,8 +203,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation cancelled = reservation.withId(1L).cancel();
 
@@ -218,8 +222,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation confirmed = reservation.withId(1L).confirm();
 
@@ -237,8 +241,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation reservationWithId = reservation.withId(1L);
 
@@ -258,8 +262,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation confirmed = reservation.withId(1L).confirm();
 
@@ -276,15 +280,15 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation reservation2 =
         Reservation.create(
             1L,
             2L,
-            LocalDateTime.of(2024, 1, 1, 10, 30),
-            LocalDateTime.of(2024, 1, 1, 11, 30),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 30),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 30),
             new BigDecimal("15000"));
 
     assertThat(reservation1.overlapsWith(reservation2)).isTrue();
@@ -297,15 +301,15 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation reservation2 =
         Reservation.create(
             1L,
             2L,
-            LocalDateTime.of(2024, 1, 1, 11, 0),
-            LocalDateTime.of(2024, 1, 1, 12, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 12, 0),
             new BigDecimal("15000"));
 
     assertThat(reservation1.overlapsWith(reservation2)).isFalse();
@@ -318,15 +322,15 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation reservation2 =
         Reservation.create(
             2L,
             2L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("15000"));
 
     assertThat(reservation1.overlapsWith(reservation2)).isFalse();
@@ -339,8 +343,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
 
     assertThat(reservation.overlapsWith(null)).isFalse();
@@ -353,8 +357,8 @@ class ReservationTest {
         Reservation.create(
             1L,
             1L,
-            LocalDateTime.of(2024, 1, 1, 10, 0),
-            LocalDateTime.of(2024, 1, 1, 11, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
+            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             new BigDecimal("10000"));
     Reservation confirmed = pending.withId(1L).confirm();
 
