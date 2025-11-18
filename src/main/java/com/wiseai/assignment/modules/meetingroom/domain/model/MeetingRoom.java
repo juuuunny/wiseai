@@ -41,6 +41,20 @@ public class MeetingRoom {
         .build();
   }
 
+  public MeetingRoom updateInfo(String name, Integer capacity, BigDecimal hourlyFee, String description) {
+    validateName(name);
+    validateCapacity(capacity);
+    validateHourlyFee(hourlyFee);
+
+    return MeetingRoom.builder()
+        .id(id)
+        .name(name.trim())
+        .capacity(capacity)
+        .hourlyFee(hourlyFee)
+        .description(description)
+        .build();
+  }
+
   private static void validateName(String name) {
     if (name == null || name.isBlank()) {
       throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_NAME);
