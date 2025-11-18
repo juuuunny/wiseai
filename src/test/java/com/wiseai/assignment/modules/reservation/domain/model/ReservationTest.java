@@ -19,15 +19,26 @@ class ReservationTest {
   private static final int TEST_MONTH = 1;
   private static final int TEST_DAY = 1;
 
+  // 공통 테스트 데이터
+  private static final Long DEFAULT_MEETING_ROOM_ID = 1L;
+  private static final Long DEFAULT_USER_ID = 1L;
+  private static final Long DEFAULT_RESERVATION_ID = 1L;
+  private static final LocalDateTime DEFAULT_START_TIME =
+      LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+  private static final LocalDateTime DEFAULT_END_TIME =
+      LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
+  private static final BigDecimal DEFAULT_TOTAL_AMOUNT = new BigDecimal("10000");
+  private static final BigDecimal SECOND_TOTAL_AMOUNT = new BigDecimal("15000");
+
   @Test
   @DisplayName("예약 생성 성공")
   void createReservation_success() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
+    LocalDateTime startTime = DEFAULT_START_TIME;
+    LocalDateTime endTime = DEFAULT_END_TIME;
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when
     Reservation reservation =
@@ -47,10 +58,10 @@ class ReservationTest {
   void createReservation_fail_invalidMeetingRoomId() {
     // given
     Long invalidMeetingRoomId = 0L;
-    Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    Long userId = DEFAULT_USER_ID;
+    LocalDateTime startTime = DEFAULT_START_TIME;
+    LocalDateTime endTime = DEFAULT_END_TIME;
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -63,11 +74,11 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 잘못된 사용자 ID")
   void createReservation_fail_invalidUserId() {
     // given
-    Long meetingRoomId = 1L;
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
     Long invalidUserId = -1L;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    LocalDateTime startTime = DEFAULT_START_TIME;
+    LocalDateTime endTime = DEFAULT_END_TIME;
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -80,11 +91,11 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 시작 시간이 종료 시간보다 늦음")
   void createReservation_fail_invalidTimeRange() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
     LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
     LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -97,11 +108,11 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 시작 시간과 종료 시간이 같음")
   void createReservation_fail_sameStartAndEndTime() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(2024, 1, 1, 10, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
+    LocalDateTime startTime = DEFAULT_START_TIME;
+    LocalDateTime endTime = DEFAULT_START_TIME;
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -114,11 +125,11 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 정시/30분 단위가 아닌 시작 시간")
   void createReservation_fail_invalidTimeUnit_startTime() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
     LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 15);
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    LocalDateTime endTime = DEFAULT_END_TIME;
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -131,11 +142,11 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 정시/30분 단위가 아닌 종료 시간")
   void createReservation_fail_invalidTimeUnit_endTime() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
+    LocalDateTime startTime = DEFAULT_START_TIME;
     LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 45);
-    BigDecimal totalAmount = new BigDecimal("10000");
+    BigDecimal totalAmount = DEFAULT_TOTAL_AMOUNT;
 
     // when & then
     assertThatThrownBy(
@@ -151,7 +162,8 @@ class ReservationTest {
     LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 30);
 
     Reservation reservation =
-        Reservation.create(1L, 1L, startTime, endTime, new BigDecimal("10000"));
+        Reservation.create(
+            DEFAULT_MEETING_ROOM_ID, DEFAULT_USER_ID, startTime, endTime, DEFAULT_TOTAL_AMOUNT);
 
     assertThat(reservation.getStartTime()).isEqualTo(startTime);
     assertThat(reservation.getEndTime()).isEqualTo(endTime);
@@ -161,10 +173,10 @@ class ReservationTest {
   @DisplayName("예약 생성 실패 - 잘못된 총 금액")
   void createReservation_fail_invalidTotalAmount() {
     // given
-    Long meetingRoomId = 1L;
-    Long userId = 1L;
-    LocalDateTime startTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0);
-    LocalDateTime endTime = LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
+    Long meetingRoomId = DEFAULT_MEETING_ROOM_ID;
+    Long userId = DEFAULT_USER_ID;
+    LocalDateTime startTime = DEFAULT_START_TIME;
+    LocalDateTime endTime = DEFAULT_END_TIME;
     BigDecimal negativeAmount = new BigDecimal("-1000");
 
     // when & then
@@ -180,12 +192,12 @@ class ReservationTest {
     // given
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation reservationWithId = reservation.withId(1L);
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation reservationWithId = reservation.withId(DEFAULT_RESERVATION_ID);
 
     // when
     Reservation cancelled = reservationWithId.cancel();
@@ -201,12 +213,12 @@ class ReservationTest {
     // given
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation cancelled = reservation.withId(1L).cancel();
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation cancelled = reservation.withId(DEFAULT_RESERVATION_ID).cancel();
 
     // when & then
     assertThatThrownBy(() -> cancelled.cancel())
@@ -220,12 +232,12 @@ class ReservationTest {
     // given
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation confirmed = reservation.withId(1L).confirm();
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation confirmed = reservation.withId(DEFAULT_RESERVATION_ID).confirm();
 
     // when & then
     assertThatThrownBy(() -> confirmed.cancel())
@@ -239,12 +251,12 @@ class ReservationTest {
     // given
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation reservationWithId = reservation.withId(1L);
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation reservationWithId = reservation.withId(DEFAULT_RESERVATION_ID);
 
     // when
     Reservation confirmed = reservationWithId.confirm();
@@ -260,12 +272,12 @@ class ReservationTest {
     // given
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation confirmed = reservation.withId(1L).confirm();
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation confirmed = reservation.withId(DEFAULT_RESERVATION_ID).confirm();
 
     // when & then
     assertThatThrownBy(() -> confirmed.confirm())
@@ -278,18 +290,18 @@ class ReservationTest {
   void overlapsWith_overlapping() {
     Reservation reservation1 =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
     Reservation reservation2 =
         Reservation.create(
-            1L,
+            DEFAULT_MEETING_ROOM_ID,
             2L,
             LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 30),
             LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 30),
-            new BigDecimal("15000"));
+            SECOND_TOTAL_AMOUNT);
 
     assertThat(reservation1.overlapsWith(reservation2)).isTrue();
   }
@@ -299,18 +311,18 @@ class ReservationTest {
   void overlapsWith_notOverlapping() {
     Reservation reservation1 =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
     Reservation reservation2 =
         Reservation.create(
-            1L,
+            DEFAULT_MEETING_ROOM_ID,
             2L,
             LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
             LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 12, 0),
-            new BigDecimal("15000"));
+            SECOND_TOTAL_AMOUNT);
 
     assertThat(reservation1.overlapsWith(reservation2)).isFalse();
   }
@@ -320,18 +332,13 @@ class ReservationTest {
   void overlapsWith_differentMeetingRoom() {
     Reservation reservation1 =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
     Reservation reservation2 =
-        Reservation.create(
-            2L,
-            2L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("15000"));
+        Reservation.create(2L, 2L, DEFAULT_START_TIME, DEFAULT_END_TIME, SECOND_TOTAL_AMOUNT);
 
     assertThat(reservation1.overlapsWith(reservation2)).isFalse();
   }
@@ -341,11 +348,11 @@ class ReservationTest {
   void overlapsWith_null() {
     Reservation reservation =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
 
     assertThat(reservation.overlapsWith(null)).isFalse();
   }
@@ -355,12 +362,12 @@ class ReservationTest {
   void canCancel() {
     Reservation pending =
         Reservation.create(
-            1L,
-            1L,
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 10, 0),
-            LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0),
-            new BigDecimal("10000"));
-    Reservation confirmed = pending.withId(1L).confirm();
+            DEFAULT_MEETING_ROOM_ID,
+            DEFAULT_USER_ID,
+            DEFAULT_START_TIME,
+            DEFAULT_END_TIME,
+            DEFAULT_TOTAL_AMOUNT);
+    Reservation confirmed = pending.withId(DEFAULT_RESERVATION_ID).confirm();
 
     assertThat(pending.canCancel()).isTrue();
     assertThat(confirmed.canCancel()).isFalse();

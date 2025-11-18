@@ -13,20 +13,28 @@ import com.wiseai.assignment.modules.meetingroom.domain.status.MeetingRoomErrorS
 
 class MeetingRoomTest {
 
+  // 공통 테스트 데이터
+  private static final BigDecimal FEE_10000 = new BigDecimal("10000");
+  private static final BigDecimal FEE_12000 = new BigDecimal("12000");
+  private static final BigDecimal FEE_15000 = new BigDecimal("15000");
+  private static final BigDecimal FEE_20000 = new BigDecimal("20000");
+  private static final BigDecimal FEE_25000 = new BigDecimal("25000");
+  private static final BigDecimal FEE_NEGATIVE = new BigDecimal("-1");
+
   @Test
   @DisplayName("회의실 생성 성공")
   void createMeetingRoom_success() {
-    MeetingRoom meetingRoom = MeetingRoom.create("Maple", 6, new BigDecimal("15000"), "화이트보드 준비");
+    MeetingRoom meetingRoom = MeetingRoom.create("Maple", 6, FEE_15000, "화이트보드 준비");
 
     assertThat(meetingRoom.getName()).isEqualTo("Maple");
     assertThat(meetingRoom.getCapacity()).isEqualTo(6);
-    assertThat(meetingRoom.getHourlyFee()).isEqualTo(new BigDecimal("15000"));
+    assertThat(meetingRoom.getHourlyFee()).isEqualTo(FEE_15000);
   }
 
   @Test
   @DisplayName("이름이 비어있으면 예외가 발생한다")
   void createMeetingRoom_fail_invalidName() {
-    assertThatThrownBy(() -> MeetingRoom.create(" ", 6, new BigDecimal("10000"), null))
+    assertThatThrownBy(() -> MeetingRoom.create(" ", 6, FEE_10000, null))
         .isInstanceOf(MeetingRoomException.class)
         .hasMessage(MeetingRoomErrorStatus.INVALID_NAME.getMessage());
   }
@@ -34,7 +42,7 @@ class MeetingRoomTest {
   @Test
   @DisplayName("수용 인원이 1명 미만이면 예외가 발생한다")
   void createMeetingRoom_fail_invalidCapacity() {
-    assertThatThrownBy(() -> MeetingRoom.create("Pine", 0, new BigDecimal("12000"), null))
+    assertThatThrownBy(() -> MeetingRoom.create("Pine", 0, FEE_12000, null))
         .isInstanceOf(MeetingRoomException.class)
         .hasMessage(MeetingRoomErrorStatus.INVALID_CAPACITY.getMessage());
   }
@@ -42,7 +50,7 @@ class MeetingRoomTest {
   @Test
   @DisplayName("시간당 요금이 음수면 예외가 발생한다")
   void createMeetingRoom_fail_invalidFee() {
-    assertThatThrownBy(() -> MeetingRoom.create("Oak", 4, new BigDecimal("-1"), null))
+    assertThatThrownBy(() -> MeetingRoom.create("Oak", 4, FEE_NEGATIVE, null))
         .isInstanceOf(MeetingRoomException.class)
         .hasMessage(MeetingRoomErrorStatus.INVALID_HOURLY_FEE.getMessage());
   }
@@ -50,19 +58,19 @@ class MeetingRoomTest {
   @Test
   @DisplayName("회의실 정보 수정 성공")
   void updateMeetingRoom_success() {
-    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 8, new BigDecimal("20000"), null);
+    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 8, FEE_20000, null);
 
-    MeetingRoom updated = meetingRoom.updateInfo("Beta", 10, new BigDecimal("25000"), "프로젝터 준비");
+    MeetingRoom updated = meetingRoom.updateInfo("Beta", 10, FEE_25000, "프로젝터 준비");
 
     assertThat(updated.getName()).isEqualTo("Beta");
     assertThat(updated.getCapacity()).isEqualTo(10);
-    assertThat(updated.getHourlyFee()).isEqualTo(new BigDecimal("25000"));
+    assertThat(updated.getHourlyFee()).isEqualTo(FEE_25000);
   }
 
   @Test
   @DisplayName("수용 인원 체크")
   void canAccommodate() {
-    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 4, new BigDecimal("10000"), null);
+    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 4, FEE_10000, null);
 
     assertThat(meetingRoom.canAccommodate(3)).isTrue();
     assertThat(meetingRoom.canAccommodate(5)).isFalse();
@@ -71,7 +79,7 @@ class MeetingRoomTest {
   @Test
   @DisplayName("이용 요금 계산")
   void calculateFee_success() {
-    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 4, new BigDecimal("12000"), null);
+    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 4, FEE_12000, null);
 
     BigDecimal fee = meetingRoom.calculateFee(90);
 
