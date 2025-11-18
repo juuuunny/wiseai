@@ -158,4 +158,78 @@ public class CookieUtil {
     deleteCookie(request, response, "accessTokenExpiration");
     deleteCookie(request, response, "refreshTokenExpiration");
   }
+
+  /**
+   * 토큰 응답 DTO를 기반으로 액세스 토큰과 리프레시 토큰을 쿠키에 저장합니다. 액세스 토큰 만료 시간도 함께 저장합니다.
+   *
+   * @param request HTTP 요청 객체 (프로토콜 감지용)
+   * @param response HTTP 응답 객체
+   * @param accessToken 액세스 토큰
+   * @param refreshToken 리프레시 토큰
+   * @param accessTokenExpiration 액세스 토큰 만료 시간 (밀리초)
+   * @param refreshTokenExpiration 리프레시 토큰 만료 시간 (밀리초)
+   */
+  public void setTokenCookies(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String accessToken,
+      String refreshToken,
+      long accessTokenExpiration,
+      long refreshTokenExpiration) {
+    // 액세스 토큰 쿠키 저장
+    long accessTokenExpirationSeconds = accessTokenExpiration / 1000;
+    int accessTokenMaxAge =
+        accessTokenExpirationSeconds > Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) accessTokenExpirationSeconds;
+    setCookie(request, response, "accessToken", accessToken, accessTokenMaxAge);
+    setCookie(
+        request,
+        response,
+        "accessTokenExpiration",
+        String.valueOf(((long) accessTokenMaxAge) * 1000),
+        accessTokenMaxAge);
+
+    // 리프레시 토큰 쿠키 저장
+    long refreshTokenExpirationSeconds = refreshTokenExpiration / 1000;
+    int refreshTokenMaxAge =
+        refreshTokenExpirationSeconds > Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) refreshTokenExpirationSeconds;
+    setCookie(request, response, "refreshToken", refreshToken, refreshTokenMaxAge);
+  }
+
+  /**
+   * 토큰 응답 DTO를 기반으로 액세스 토큰과 리프레시 토큰을 쿠키에 저장합니다. 액세스 토큰 만료 시간은 저장하지 않습니다.
+   *
+   * @param request HTTP 요청 객체 (프로토콜 감지용)
+   * @param response HTTP 응답 객체
+   * @param accessToken 액세스 토큰
+   * @param refreshToken 리프레시 토큰
+   * @param accessTokenExpiration 액세스 토큰 만료 시간 (밀리초)
+   * @param refreshTokenExpiration 리프레시 토큰 만료 시간 (밀리초)
+   */
+  public void setTokenCookiesWithoutExpiration(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      String accessToken,
+      String refreshToken,
+      long accessTokenExpiration,
+      long refreshTokenExpiration) {
+    // 액세스 토큰 쿠키 저장
+    long accessTokenExpirationSeconds = accessTokenExpiration / 1000;
+    int accessTokenMaxAge =
+        accessTokenExpirationSeconds > Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) accessTokenExpirationSeconds;
+    setCookie(request, response, "accessToken", accessToken, accessTokenMaxAge);
+
+    // 리프레시 토큰 쿠키 저장
+    long refreshTokenExpirationSeconds = refreshTokenExpiration / 1000;
+    int refreshTokenMaxAge =
+        refreshTokenExpirationSeconds > Integer.MAX_VALUE
+            ? Integer.MAX_VALUE
+            : (int) refreshTokenExpirationSeconds;
+    setCookie(request, response, "refreshToken", refreshToken, refreshTokenMaxAge);
+  }
 }

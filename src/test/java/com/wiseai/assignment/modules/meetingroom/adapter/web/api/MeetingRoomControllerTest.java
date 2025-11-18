@@ -140,4 +140,24 @@ class MeetingRoomControllerTest {
         .andExpect(jsonPath("$.code").value("MEETINGROOM-004"))
         .andExpect(jsonPath("$.message").value("회의실을 찾을 수 없습니다."));
   }
+
+  @Test
+  @DisplayName("회의실 단건 조회 실패 - 잘못된 ID (0)")
+  void getMeetingRoom_invalidId_zero() throws Exception {
+    // when & then
+    mockMvc
+        .perform(get("/meeting-rooms/{id}", 0))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("회의실 단건 조회 실패 - 잘못된 ID (음수)")
+  void getMeetingRoom_invalidId_negative() throws Exception {
+    // when & then
+    mockMvc
+        .perform(get("/meeting-rooms/{id}", -1))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
 }

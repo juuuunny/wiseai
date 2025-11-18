@@ -16,7 +16,9 @@ import com.wiseai.assignment.modules.user.domain.status.UserSuccessStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class UserSignUpController implements UserSignUpApi {
@@ -28,9 +30,11 @@ public class UserSignUpController implements UserSignUpApi {
   @Override
   public ResponseEntity<SuccessResponse<Void>> signUpUserSelf(
       SelfSignUpWebRequest webRequest, HttpServletRequest request, HttpServletResponse response) {
+    log.debug("회원가입 요청: email={}", webRequest.email());
     SelfSignUpRequest requestDto = userSignUpWebMapper.toApplicationDto(webRequest);
     ReIssueTokenResponse tokenResponse = selfSignUpUseCase.signUpSelf(requestDto);
     setTokenCookies(request, response, tokenResponse);
+    log.info("회원가입 성공: email={}", webRequest.email());
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.of(UserSuccessStatus.CREATED_USER));
@@ -40,22 +44,12 @@ public class UserSignUpController implements UserSignUpApi {
       HttpServletRequest request,
       HttpServletResponse response,
       ReIssueTokenResponse tokenResponse) {
-    // 액세스 토큰 쿠키 저장
-    long accessTokenExpirationSeconds = tokenResponse.accessTokenExpiration() / 1000;
-    int accessTokenMaxAge =
-        accessTokenExpirationSeconds > Integer.MAX_VALUE
-            ? Integer.MAX_VALUE
-            : (int) accessTokenExpirationSeconds;
-    cookieUtil.setCookie(
-        request, response, "accessToken", tokenResponse.accessToken(), accessTokenMaxAge);
-
-    // 리프레시 토큰 쿠키 저장
-    long refreshTokenExpirationSeconds = tokenResponse.refreshTokenExpiration() / 1000;
-    int refreshTokenMaxAge =
-        refreshTokenExpirationSeconds > Integer.MAX_VALUE
-            ? Integer.MAX_VALUE
-            : (int) refreshTokenExpirationSeconds;
-    cookieUtil.setCookie(
-        request, response, "refreshToken", tokenResponse.refreshToken(), refreshTokenMaxAge);
+    cookieUtil.setTokenCookiesWithoutExpiration(
+        request,
+        response,
+        tokenResponse.accessToken(),
+        tokenResponse.refreshToken(),
+        tokenResponse.accessTokenExpiration(),
+        tokenResponse.refreshTokenExpiration());
   }
 }

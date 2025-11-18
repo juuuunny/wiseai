@@ -85,6 +85,6 @@ class MeetingRoomTest {
 
     assertThatThrownBy(() -> meetingRoom.calculateFee(0))
         .isInstanceOf(MeetingRoomException.class)
-        .hasMessage(MeetingRoomErrorStatus.INVALID_HOURLY_FEE.getMessage());
+        .hasMessage(MeetingRoomErrorStatus.INVALID_MINUTES.getMessage());
   }
 }

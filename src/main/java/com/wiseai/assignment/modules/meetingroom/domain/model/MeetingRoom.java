@@ -64,7 +64,7 @@ public class MeetingRoom {
 
   public BigDecimal calculateFee(int minutes) {
     if (minutes <= 0) {
-      throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_HOURLY_FEE);
+      throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_MINUTES);
     }
     return hourlyFee
         .multiply(BigDecimal.valueOf(minutes))
