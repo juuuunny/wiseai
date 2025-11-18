@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,9 +33,7 @@ import com.wiseai.assignment.modules.security.filter.JwtFilter;
 
 @WebMvcTest(
     controllers = MeetingRoomController.class,
-    excludeAutoConfiguration = {
-      org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
-    },
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class},
     excludeFilters = {
       @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = EnableWebSecurity.class),
       @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class),
