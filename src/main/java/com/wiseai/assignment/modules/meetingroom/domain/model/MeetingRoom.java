@@ -59,6 +59,9 @@ public class MeetingRoom {
     if (name == null || name.isBlank()) {
       throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_NAME);
     }
+    if (name.length() > 50) {
+      throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_NAME);
+    }
   }
 
   private static void validateCapacity(Integer capacity) {
