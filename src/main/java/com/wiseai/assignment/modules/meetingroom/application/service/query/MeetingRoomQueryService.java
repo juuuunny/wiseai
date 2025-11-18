@@ -25,31 +25,43 @@ public class MeetingRoomQueryService implements GetMeetingRoomsUseCase, GetMeeti
   @Override
   @Transactional(readOnly = true)
   public List<MeetingRoomResponse> getAllMeetingRooms() {
-    return meetingRoomQueryPort.findAll().stream()
-        .map(
-            meetingRoom ->
-                new MeetingRoomResponse(
-                    meetingRoom.getId(),
-                    meetingRoom.getName(),
-                    meetingRoom.getCapacity(),
-                    meetingRoom.getHourlyFee(),
-                    meetingRoom.getDescription()))
-        .toList();
+    log.debug("회의실 목록 조회 요청");
+    List<MeetingRoomResponse> result =
+        meetingRoomQueryPort.findAll().stream()
+            .map(
+                meetingRoom ->
+                    new MeetingRoomResponse(
+                        meetingRoom.getId(),
+                        meetingRoom.getName(),
+                        meetingRoom.getCapacity(),
+                        meetingRoom.getHourlyFee(),
+                        meetingRoom.getDescription()))
+            .toList();
+    log.debug("회의실 목록 조회 완료: {}개", result.size());
+    return result;
   }
 
   @Override
   @Transactional(readOnly = true)
   public MeetingRoomResponse getMeetingRoom(Long id) {
-    return meetingRoomQueryPort
-        .findById(id)
-        .map(
-            meetingRoom ->
-                new MeetingRoomResponse(
-                    meetingRoom.getId(),
-                    meetingRoom.getName(),
-                    meetingRoom.getCapacity(),
-                    meetingRoom.getHourlyFee(),
-                    meetingRoom.getDescription()))
-        .orElseThrow(() -> new MeetingRoomException(MeetingRoomErrorStatus.NOT_FOUND));
+    log.debug("회의실 단건 조회 요청: id={}", id);
+    MeetingRoomResponse result =
+        meetingRoomQueryPort
+            .findById(id)
+            .map(
+                meetingRoom ->
+                    new MeetingRoomResponse(
+                        meetingRoom.getId(),
+                        meetingRoom.getName(),
+                        meetingRoom.getCapacity(),
+                        meetingRoom.getHourlyFee(),
+                        meetingRoom.getDescription()))
+            .orElseThrow(
+                () -> {
+                  log.warn("회의실을 찾을 수 없음: id={}", id);
+                  return new MeetingRoomException(MeetingRoomErrorStatus.NOT_FOUND);
+                });
+    log.debug("회의실 단건 조회 완료: id={}", id);
+    return result;
   }
 }

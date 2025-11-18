@@ -29,7 +29,9 @@ public interface UserSignUpApi {
       security = {})
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "201", description = "회원가입 성공", useReturnTypeSchema = true)
+        @ApiResponse(responseCode = "201", description = "회원가입 성공", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (입력값 검증 실패)"),
+        @ApiResponse(responseCode = "409", description = "이미 존재하는 이메일")
       })
   @PostMapping(value = "/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
   ResponseEntity<SuccessResponse<Void>> signUpUserSelf(

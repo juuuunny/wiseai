@@ -12,17 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
+import com.wiseai.assignment.modules.common.config.adapter.persistence.JpaConfig;
 import com.wiseai.assignment.modules.meetingroom.adapter.jpa.entity.MeetingRoomEntity;
 import com.wiseai.assignment.modules.meetingroom.adapter.jpa.mapper.MeetingRoomEntityMapper;
 import com.wiseai.assignment.modules.meetingroom.adapter.jpa.repository.MeetingRoomJpaRepository;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 
 @DataJpaTest
-@Import({
-  MeetingRoomEntityMapper.class,
-  MeetingRoomQueryDbAdapter.class,
-  com.wiseai.assignment.modules.common.config.adapter.persistence.JpaConfig.class
-})
+@Import({MeetingRoomEntityMapper.class, MeetingRoomQueryDbAdapter.class, JpaConfig.class})
 @DisplayName("MeetingRoomQueryDbAdapter 테스트")
 class MeetingRoomQueryDbAdapterTest {
 
