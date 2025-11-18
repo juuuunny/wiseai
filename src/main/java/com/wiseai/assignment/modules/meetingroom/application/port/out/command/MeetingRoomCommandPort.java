@@ -9,4 +9,3 @@ public interface MeetingRoomCommandPort {
 
   void delete(Long id);
 }
-

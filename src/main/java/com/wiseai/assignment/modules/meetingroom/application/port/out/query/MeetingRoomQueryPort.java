@@ -10,4 +10,3 @@ public interface MeetingRoomQueryPort {
 
   Optional<MeetingRoom> findById(Long id);
 }
-

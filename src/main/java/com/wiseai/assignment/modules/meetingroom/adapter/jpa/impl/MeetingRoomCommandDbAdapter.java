@@ -43,4 +43,3 @@ public class MeetingRoomCommandDbAdapter implements MeetingRoomCommandPort {
     meetingRoomJpaRepository.deleteById(id);
   }
 }
-

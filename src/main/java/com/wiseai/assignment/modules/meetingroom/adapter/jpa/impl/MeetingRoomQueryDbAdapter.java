@@ -31,4 +31,3 @@ public class MeetingRoomQueryDbAdapter implements MeetingRoomQueryPort {
     return meetingRoomJpaRepository.findById(id).map(meetingRoomEntityMapper::toDomain);
   }
 }
-

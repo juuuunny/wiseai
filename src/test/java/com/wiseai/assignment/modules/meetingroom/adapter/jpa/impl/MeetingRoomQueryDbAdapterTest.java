@@ -39,10 +39,8 @@ class MeetingRoomQueryDbAdapterTest {
   @DisplayName("전체 회의실 조회 성공")
   void findAll_success() {
     // given
-    MeetingRoomEntity entity1 =
-        new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명1");
-    MeetingRoomEntity entity2 =
-        new MeetingRoomEntity("회의실 B", 20, new BigDecimal("20000"), "설명2");
+    MeetingRoomEntity entity1 = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명1");
+    MeetingRoomEntity entity2 = new MeetingRoomEntity("회의실 B", 20, new BigDecimal("20000"), "설명2");
     meetingRoomJpaRepository.save(entity1);
     meetingRoomJpaRepository.save(entity2);
 
@@ -69,8 +67,7 @@ class MeetingRoomQueryDbAdapterTest {
   @DisplayName("ID로 회의실 조회 성공")
   void findById_success() {
     // given
-    MeetingRoomEntity entity =
-        new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
     MeetingRoomEntity saved = meetingRoomJpaRepository.save(entity);
     Long id = saved.getId();
 
@@ -95,4 +92,3 @@ class MeetingRoomQueryDbAdapterTest {
     assertThat(result).isEmpty();
   }
 }
-

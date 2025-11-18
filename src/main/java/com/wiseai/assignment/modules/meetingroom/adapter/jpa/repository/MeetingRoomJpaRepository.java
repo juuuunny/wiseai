@@ -9,4 +9,3 @@ import com.wiseai.assignment.modules.meetingroom.adapter.jpa.entity.MeetingRoomE
 public interface MeetingRoomJpaRepository extends JpaRepository<MeetingRoomEntity, Long> {
   List<MeetingRoomEntity> findAllByOrderByIdAsc();
 }
-

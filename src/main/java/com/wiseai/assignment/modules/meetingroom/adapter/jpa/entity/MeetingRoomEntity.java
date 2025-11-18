@@ -34,7 +34,8 @@ public class MeetingRoomEntity extends BaseTimeEntity {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  public MeetingRoomEntity(String name, Integer capacity, BigDecimal hourlyFee, String description) {
+  public MeetingRoomEntity(
+      String name, Integer capacity, BigDecimal hourlyFee, String description) {
     this.name = name;
     this.capacity = capacity;
     this.hourlyFee = hourlyFee;
@@ -52,4 +53,3 @@ public class MeetingRoomEntity extends BaseTimeEntity {
     this.id = id;
   }
 }
-

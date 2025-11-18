@@ -35,8 +35,7 @@ class MeetingRoomCommandDbAdapterTest {
   @DisplayName("회의실 저장 성공")
   void save_success() {
     // given
-    MeetingRoom meetingRoom =
-        MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoom meetingRoom = MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "설명");
 
     // when
     MeetingRoom saved = meetingRoomCommandDbAdapter.save(meetingRoom);
@@ -53,8 +52,7 @@ class MeetingRoomCommandDbAdapterTest {
   @DisplayName("회의실 수정 성공")
   void update_success() {
     // given
-    MeetingRoomEntity entity =
-        new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
     MeetingRoomEntity savedEntity = meetingRoomJpaRepository.save(entity);
     MeetingRoom saved = meetingRoomEntityMapper.toDomain(savedEntity);
 
@@ -95,8 +93,7 @@ class MeetingRoomCommandDbAdapterTest {
   @DisplayName("회의실 삭제 성공")
   void delete_success() {
     // given
-    MeetingRoomEntity entity =
-        new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
+    MeetingRoomEntity entity = new MeetingRoomEntity("회의실 A", 10, new BigDecimal("10000"), "설명");
     MeetingRoomEntity saved = meetingRoomJpaRepository.save(entity);
     Long id = saved.getId();
 
@@ -107,4 +104,3 @@ class MeetingRoomCommandDbAdapterTest {
     assertThat(meetingRoomJpaRepository.findById(id)).isEmpty();
   }
 }
-
