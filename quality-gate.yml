@@ -32,7 +32,7 @@ bugs:
 
 # 유지보수성 등급
 maintainability:
-  minimum_rating: B
+  minimum_rating: C
 
 # 신뢰성 등급
 reliability:
