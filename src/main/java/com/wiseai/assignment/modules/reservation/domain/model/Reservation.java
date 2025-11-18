@@ -124,6 +124,9 @@ public class Reservation {
    * @return 겹치면 true, 아니면 false
    */
   public boolean overlapsWith(Reservation other) {
+    if (other == null) {
+      return false;
+    }
     if (!meetingRoomId.equals(other.meetingRoomId)) {
       return false;
     }
@@ -161,6 +164,9 @@ public class Reservation {
   }
 
   private static void validateTimeUnit(LocalDateTime startTime, LocalDateTime endTime) {
+    if (startTime == null || endTime == null) {
+      throw new ReservationException(ReservationErrorStatus.INVALID_TIME_UNIT);
+    }
     int startMinute = startTime.getMinute();
     int endMinute = endTime.getMinute();
 
