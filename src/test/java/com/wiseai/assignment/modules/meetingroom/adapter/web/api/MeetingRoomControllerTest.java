@@ -36,9 +36,7 @@ import com.wiseai.assignment.modules.security.filter.JwtFilter;
       org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
     },
     excludeFilters = {
-      @ComponentScan.Filter(
-          type = FilterType.ANNOTATION,
-          classes = EnableWebSecurity.class),
+      @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = EnableWebSecurity.class),
       @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtFilter.class),
       @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class)
     })

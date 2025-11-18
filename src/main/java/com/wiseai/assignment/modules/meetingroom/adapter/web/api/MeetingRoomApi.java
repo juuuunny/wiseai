@@ -23,4 +23,3 @@ public interface MeetingRoomApi {
   @GetMapping("/meeting-rooms/{id}")
   ResponseEntity<SuccessResponse<MeetingRoomResponse>> getMeetingRoom(@PathVariable Long id);
 }
-

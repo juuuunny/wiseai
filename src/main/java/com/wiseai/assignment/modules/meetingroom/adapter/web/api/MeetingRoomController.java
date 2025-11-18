@@ -34,4 +34,3 @@ public class MeetingRoomController implements MeetingRoomApi {
         SuccessResponse.of(MeetingRoomSuccessStatus.OK_GET_MEETING_ROOM, meetingRoom));
   }
 }
-

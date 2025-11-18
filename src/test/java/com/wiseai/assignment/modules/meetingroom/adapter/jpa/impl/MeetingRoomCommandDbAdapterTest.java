@@ -18,11 +18,7 @@ import com.wiseai.assignment.modules.meetingroom.adapter.jpa.repository.MeetingR
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 
 @DataJpaTest
-@Import({
-  MeetingRoomEntityMapper.class,
-  MeetingRoomCommandDbAdapter.class,
-  JpaConfig.class
-})
+@Import({MeetingRoomEntityMapper.class, MeetingRoomCommandDbAdapter.class, JpaConfig.class})
 @DisplayName("MeetingRoomCommandDbAdapter 테스트")
 class MeetingRoomCommandDbAdapterTest {
 
