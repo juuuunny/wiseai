@@ -22,6 +22,7 @@ import com.wiseai.assignment.modules.user.application.port.out.auth.JwtGenerateP
 import com.wiseai.assignment.modules.user.application.port.out.auth.JwtValidatePort;
 import com.wiseai.assignment.modules.user.application.port.out.auth.ManageRefreshTokenPort;
 import com.wiseai.assignment.modules.user.application.port.out.command.UserCommandPort;
+import com.wiseai.assignment.modules.user.domain.enums.RoleType;
 import com.wiseai.assignment.modules.user.domain.exception.UserException;
 import com.wiseai.assignment.modules.user.domain.model.User;
 import com.wiseai.assignment.modules.user.domain.status.UserErrorStatus;
@@ -53,7 +54,7 @@ class SignUpUserServiceTest {
             .email(request.email())
             .password("encoded")
             .name(request.name())
-            .role(com.wiseai.assignment.modules.user.domain.enums.RoleType.ROLE_USER)
+            .role(RoleType.ROLE_USER)
             .build();
     given(userCommandPort.save(any(User.class))).willReturn(savedUser);
 
