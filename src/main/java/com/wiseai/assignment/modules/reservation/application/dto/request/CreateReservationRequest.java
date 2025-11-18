@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,10 +18,8 @@ import jakarta.validation.constraints.NotNull;
 public record CreateReservationRequest(
     @NotNull(message = "회의실 ID는 필수입니다.") @Min(value = 1, message = "회의실 ID는 1 이상이어야 합니다.")
         Long meetingRoomId,
-    @NotNull(message = "시작 시간은 필수입니다.") @Future(message = "시작 시간은 현재 시간 이후여야 합니다.")
-        LocalDateTime startTime,
-    @NotNull(message = "종료 시간은 필수입니다.") @Future(message = "종료 시간은 현재 시간 이후여야 합니다.")
-        LocalDateTime endTime,
+    @NotNull(message = "시작 시간은 필수입니다.") LocalDateTime startTime,
+    @NotNull(message = "종료 시간은 필수입니다.") LocalDateTime endTime,
     @NotNull(message = "총 결제 금액은 필수입니다.")
         @DecimalMin(value = "0.0", inclusive = true, message = "총 결제 금액은 0 이상이어야 합니다.")
         BigDecimal totalAmount) {}
