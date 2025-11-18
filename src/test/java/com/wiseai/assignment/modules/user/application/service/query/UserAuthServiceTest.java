@@ -29,38 +29,44 @@ class UserAuthServiceTest {
 
   @InjectMocks private UserAuthService userAuthService;
 
+  // 공통 테스트 데이터
+  private static final Long TEST_USER_ID = 1L;
+  private static final String TEST_EMAIL = "user@example.com";
+  private static final String TEST_PASSWORD = "Password1!";
+  private static final String TEST_PASSWORD_WRONG = "wrong";
+  private static final String ENCODED_PASSWORD = "encoded";
+  private static final String TEST_NAME = "tester";
+
   @Test
   @DisplayName("이메일과 비밀번호가 일치하면 사용자 정보를 반환한다")
   void checkLoginPossible_success() {
     // given
     User storedUser =
         User.builder()
-            .id(1L)
-            .email("user@example.com")
-            .password("encoded")
-            .name("tester")
+            .id(TEST_USER_ID)
+            .email(TEST_EMAIL)
+            .password(ENCODED_PASSWORD)
+            .name(TEST_NAME)
             .role(RoleType.ROLE_USER)
             .build();
 
     given(userQueryPort.findByEmail(storedUser.getEmail())).willReturn(Optional.of(storedUser));
-    given(passwordEncoder.matches("Password1!", storedUser.getPassword())).willReturn(true);
+    given(passwordEncoder.matches(TEST_PASSWORD, storedUser.getPassword())).willReturn(true);
 
     // when
-    UserInfo userInfo =
-        userAuthService.checkLoginPossibleAndGetUserInfo("user@example.com", "Password1!");
+    UserInfo userInfo = userAuthService.checkLoginPossibleAndGetUserInfo(TEST_EMAIL, TEST_PASSWORD);
 
     // then
-    assertThat(userInfo.id()).isEqualTo(1L);
+    assertThat(userInfo.id()).isEqualTo(TEST_USER_ID);
     assertThat(userInfo.role()).isEqualTo(RoleType.ROLE_USER);
   }
 
   @Test
   @DisplayName("존재하지 않는 이메일이면 예외가 발생한다")
   void checkLoginPossible_fail_notFound() {
-    given(userQueryPort.findByEmail("user@example.com")).willReturn(Optional.empty());
+    given(userQueryPort.findByEmail(TEST_EMAIL)).willReturn(Optional.empty());
 
-    assertThatThrownBy(
-            () -> userAuthService.checkLoginPossibleAndGetUserInfo("user@example.com", "pw"))
+    assertThatThrownBy(() -> userAuthService.checkLoginPossibleAndGetUserInfo(TEST_EMAIL, "pw"))
         .isInstanceOf(UserException.class)
         .hasMessage(UserErrorStatus.INVALID_CREDENTIAL.getMessage());
   }
@@ -70,18 +76,18 @@ class UserAuthServiceTest {
   void checkLoginPossible_fail_wrongPassword() {
     User storedUser =
         User.builder()
-            .id(1L)
-            .email("user@example.com")
-            .password("encoded")
-            .name("tester")
+            .id(TEST_USER_ID)
+            .email(TEST_EMAIL)
+            .password(ENCODED_PASSWORD)
+            .name(TEST_NAME)
             .role(RoleType.ROLE_USER)
             .build();
 
     given(userQueryPort.findByEmail(storedUser.getEmail())).willReturn(Optional.of(storedUser));
-    given(passwordEncoder.matches("wrong", storedUser.getPassword())).willReturn(false);
+    given(passwordEncoder.matches(TEST_PASSWORD_WRONG, storedUser.getPassword())).willReturn(false);
 
     assertThatThrownBy(
-            () -> userAuthService.checkLoginPossibleAndGetUserInfo("user@example.com", "wrong"))
+            () -> userAuthService.checkLoginPossibleAndGetUserInfo(TEST_EMAIL, TEST_PASSWORD_WRONG))
         .isInstanceOf(UserException.class)
         .hasMessage(UserErrorStatus.INVALID_CREDENTIAL.getMessage());
   }
