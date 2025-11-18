@@ -1,5 +1,7 @@
 # 회의실 예약 시스템 RESTful API
 
+**GitHub 저장소**: https://github.com/juuuunny/wiseai
+
 ## 📋 프로젝트 개요
 
 사내 회의실 예약을 위한 RESTful API 서버입니다. Docker & Docker Compose 기반 컨테이너 환경에서 실행되며, Swagger UI를 통한 API 문서화 및 테스트를 지원합니다.
@@ -177,26 +179,137 @@ open build/reports/jacoco/test/html/index.html
 
 **로컬 SonarQube 사용 시**:
 
-1. SonarQube 토큰 발급:
+1. SonarQube 실행:
 
+```bash
+docker-compose up -d sonarqube
+```
+
+2. SonarQube 준비 대기 (약 1-2분):
+
+```bash
+# SonarQube가 준비될 때까지 대기
+curl -f http://localhost:9000/api/system/status
+```
+
+3. SonarQube 토큰 발급:
+
+   **방법 1: 웹 UI 사용**
    - http://localhost:9000 접속
-   - 로그인: `admin` / `WiseAi1234@@`
-   - My Account → Security → Generate Token
+   - 첫 실행 시: 초기 비밀번호 확인 (로그에서 확인)
+   - 로그인 후: My Account → Security → Generate Token
 
-2. 환경변수 설정:
+   **방법 2: API 사용 (자동화)**
+
+```bash
+# SonarQube 10.x: 초기 비밀번호 확인 필요 (로그에서 확인)
+# SonarQube 9.x: 기본 admin/admin 사용 가능
+export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" 2>/dev/null | jq -r '.token // empty')
+
+# 토큰이 생성되었는지 확인
+echo "SONAR_TOKEN=$SONAR_TOKEN"
+```
+
+4. 환경변수 설정:
 
 ```bash
 export SONAR_HOST_URL=http://localhost:9000
-export SONAR_TOKEN=<발급받은_토큰>
+export SONAR_TOKEN=<발급받은_토큰>  # 위에서 생성한 토큰
 ```
 
-3. 빌드 (자동으로 SonarQube 분석까지 실행):
+5. 빌드 (자동으로 SonarQube 분석까지 실행):
 
 ```bash
 ./gradlew clean build
+# 또는 SonarQube만 실행
+./gradlew sonarqube
 ```
 
+**참고**: `SONAR_TOKEN`이 설정되지 않으면 SonarQube 분석은 스킵되지만 빌드는 정상적으로 완료됩니다.
+
 **SonarQube 대시보드**: http://localhost:9000/projects?query=assignment
+
+---
+
+## 🏗️ 아키텍처
+
+### 설계 원칙
+
+본 프로젝트는 **DDD (Domain-Driven Design)**, **Hexagonal Architecture (Ports & Adapters)**, **Event-Driven Architecture**를 적용하여 설계되었습니다.
+
+### 핵심 특징
+
+#### 1. Domain Model과 Entity 분리
+
+- **Domain Model**: 비즈니스 로직을 담은 순수한 도메인 객체 (JPA 의존성 없음)
+- **Entity**: 데이터베이스 영속성을 위한 JPA 엔티티
+- **Mapper**: Domain Model ↔ Entity 변환 담당
+
+```java
+// Domain Model (비즈니스 로직)
+User user = User.create(email, password, name);
+
+// Entity (영속성 계층)
+UserEntity entity = userEntityMapper.toEntity(user);
+User domain = userEntityMapper.toDomain(entity);
+```
+
+**장점**:
+- Domain Model이 데이터베이스 기술에 독립적
+- 비즈니스 로직과 영속성 계층의 명확한 분리
+- 테스트 용이성 향상
+
+#### 2. Hexagonal Architecture (Ports & Adapters)
+
+**모듈 구조**:
+```
+modules/
+├── adapter/          # 외부와의 연결 (Web, JPA, Redis, 다른 모듈)
+├── application/      # 애플리케이션 로직
+│   ├── port/
+│   │   ├── in/      # Port In (UseCase) - 외부에서 호출받는 용도
+│   │   └── out/     # Port Out - 외부를 호출하는 용도
+│   └── service/     # Application Service (UseCase 구현)
+└── domain/          # 도메인 로직
+    ├── model/       # Domain Model
+    ├── service/     # Domain Service
+    └── exception/   # Domain Exception
+```
+
+**모듈 간 호출 원칙**:
+- Application Service는 **자신의 모듈의 Port Out**만 의존
+- Adapter Out이 실제로 **다른 모듈의 Port In(UseCase)**를 호출
+- Port Out과 Adapter Out은 **호출하는 모듈**에 위치
+
+**예시**: `auth` 모듈이 `user` 모듈을 호출하는 경우
+```java
+// auth 모듈의 Service
+AuthCommandService {
+    UserQueryPort userQueryPort;  // auth 모듈의 Port Out
+}
+
+// auth 모듈의 Adapter
+UserQueryAdapter implements UserQueryPort {
+    IsLoginPossibleUseCase isLoginPossibleUseCase;  // user 모듈의 Port In 호출
+}
+```
+
+**장점**:
+- 모듈 간 결합도 최소화
+- 의존성 역전 원칙(DIP) 준수
+- 테스트 용이성 (Mock 객체 활용)
+
+#### 3. Event-Driven Architecture
+
+- Domain Event를 통한 모듈 간 비동기 통신
+- 향후 Kafka로 확장 가능한 구조
+
+### 모듈 구성
+
+- **user**: 사용자 관리 (회원가입, 로그인 인증)
+- **auth**: 인증/인가 (JWT 토큰 관리, 리프레시 토큰)
+- **security**: Spring Security 설정 및 JWT 필터
+- **common**: 공통 응답, 예외 처리, 유틸리티
 
 ---
 
