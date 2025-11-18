@@ -5,9 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.wiseai.assignment.modules.common.exception.CommonException;
 import com.wiseai.assignment.modules.common.status.CommonErrorStatus;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public final class FileUtil {
   /** 인스턴스 생성을 방지하기 위한 private 생성자입니다. */
   private FileUtil() {}
@@ -23,7 +20,6 @@ public final class FileUtil {
   private static void checkFileSize(
       MultipartFile file, long maxSize, CommonErrorStatus errorStatus) {
     if (file.getSize() > maxSize) {
-      log.error("파일 용량 검증 실패: {}", errorStatus.getMessage());
       throw new CommonException(errorStatus);
     }
   }
@@ -39,7 +35,6 @@ public final class FileUtil {
   private static void checkFileType(
       String originalFilename, String regex, CommonErrorStatus errorStatus) {
     if (originalFilename == null || !originalFilename.matches(regex)) {
-      log.error("파일 형식 검증 실패: {}", errorStatus.getMessage());
       throw new CommonException(errorStatus);
     }
   }

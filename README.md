@@ -231,6 +231,88 @@ export SONAR_TOKEN=<발급받은_토큰>  # 위에서 생성한 토큰
 
 ---
 
+## 🏗️ 아키텍처
+
+### 설계 원칙
+
+본 프로젝트는 **DDD (Domain-Driven Design)**, **Hexagonal Architecture (Ports & Adapters)**, **Event-Driven Architecture**를 적용하여 설계되었습니다.
+
+### 핵심 특징
+
+#### 1. Domain Model과 Entity 분리
+
+- **Domain Model**: 비즈니스 로직을 담은 순수한 도메인 객체 (JPA 의존성 없음)
+- **Entity**: 데이터베이스 영속성을 위한 JPA 엔티티
+- **Mapper**: Domain Model ↔ Entity 변환 담당
+
+```java
+// Domain Model (비즈니스 로직)
+User user = User.create(email, password, name);
+
+// Entity (영속성 계층)
+UserEntity entity = userEntityMapper.toEntity(user);
+User domain = userEntityMapper.toDomain(entity);
+```
+
+**장점**:
+- Domain Model이 데이터베이스 기술에 독립적
+- 비즈니스 로직과 영속성 계층의 명확한 분리
+- 테스트 용이성 향상
+
+#### 2. Hexagonal Architecture (Ports & Adapters)
+
+**모듈 구조**:
+```
+modules/
+├── adapter/          # 외부와의 연결 (Web, JPA, Redis, 다른 모듈)
+├── application/      # 애플리케이션 로직
+│   ├── port/
+│   │   ├── in/      # Port In (UseCase) - 외부에서 호출받는 용도
+│   │   └── out/     # Port Out - 외부를 호출하는 용도
+│   └── service/     # Application Service (UseCase 구현)
+└── domain/          # 도메인 로직
+    ├── model/       # Domain Model
+    ├── service/     # Domain Service
+    └── exception/   # Domain Exception
+```
+
+**모듈 간 호출 원칙**:
+- Application Service는 **자신의 모듈의 Port Out**만 의존
+- Adapter Out이 실제로 **다른 모듈의 Port In(UseCase)**를 호출
+- Port Out과 Adapter Out은 **호출하는 모듈**에 위치
+
+**예시**: `auth` 모듈이 `user` 모듈을 호출하는 경우
+```java
+// auth 모듈의 Service
+AuthCommandService {
+    UserQueryPort userQueryPort;  // auth 모듈의 Port Out
+}
+
+// auth 모듈의 Adapter
+UserQueryAdapter implements UserQueryPort {
+    IsLoginPossibleUseCase isLoginPossibleUseCase;  // user 모듈의 Port In 호출
+}
+```
+
+**장점**:
+- 모듈 간 결합도 최소화
+- 의존성 역전 원칙(DIP) 준수
+- 테스트 용이성 (Mock 객체 활용)
+
+#### 3. Event-Driven Architecture
+
+- Domain Event를 통한 모듈 간 비동기 통신
+- 향후 Kafka로 확장 가능한 구조
+
+### 모듈 구성
+
+- **user**: 사용자 관리 (회원가입, 로그인 인증)
+- **auth**: 인증/인가 (JWT 토큰 관리, 리프레시 토큰)
+- **security**: Spring Security 설정 및 JWT 필터
+- **common**: 공통 응답, 예외 처리, 유틸리티
+
+---
+
 ## 📁 프로젝트 구조
 
 ```
