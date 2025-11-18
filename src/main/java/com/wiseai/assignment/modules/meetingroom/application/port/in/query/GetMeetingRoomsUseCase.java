@@ -7,4 +7,3 @@ import com.wiseai.assignment.modules.meetingroom.application.dto.response.Meetin
 public interface GetMeetingRoomsUseCase {
   List<MeetingRoomResponse> getAllMeetingRooms();
 }
-

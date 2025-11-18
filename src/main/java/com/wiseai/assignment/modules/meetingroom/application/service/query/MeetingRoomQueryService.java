@@ -18,8 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MeetingRoomQueryService
-    implements GetMeetingRoomsUseCase, GetMeetingRoomUseCase {
+public class MeetingRoomQueryService implements GetMeetingRoomsUseCase, GetMeetingRoomUseCase {
 
   private final MeetingRoomQueryPort meetingRoomQueryPort;
 
@@ -54,4 +53,3 @@ public class MeetingRoomQueryService
         .orElseThrow(() -> new MeetingRoomException(MeetingRoomErrorStatus.NOT_FOUND));
   }
 }
-

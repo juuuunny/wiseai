@@ -4,4 +4,3 @@ import java.math.BigDecimal;
 
 public record MeetingRoomResponse(
     Long id, String name, Integer capacity, BigDecimal hourlyFee, String description) {}
-

@@ -5,4 +5,3 @@ import com.wiseai.assignment.modules.meetingroom.application.dto.response.Meetin
 public interface GetMeetingRoomUseCase {
   MeetingRoomResponse getMeetingRoom(Long id);
 }
-
