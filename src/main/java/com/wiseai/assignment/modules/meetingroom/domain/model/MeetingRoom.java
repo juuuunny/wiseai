@@ -1,6 +1,7 @@
 package com.wiseai.assignment.modules.meetingroom.domain.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.wiseai.assignment.modules.meetingroom.domain.exception.MeetingRoomException;
 import com.wiseai.assignment.modules.meetingroom.domain.status.MeetingRoomErrorStatus;
@@ -65,7 +66,7 @@ public class MeetingRoom {
     }
     return hourlyFee
         .multiply(BigDecimal.valueOf(minutes))
-        .divide(BigDecimal.valueOf(60), BigDecimal.ROUND_HALF_UP);
+        .divide(BigDecimal.valueOf(60), 0, RoundingMode.HALF_UP);
   }
 
   private static void validateName(String name) {
