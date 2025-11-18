@@ -2,13 +2,14 @@ package com.wiseai.assignment.modules.common.util;
 
 import java.util.Optional;
 
-import org.springframework.stereotype.Component;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 /** HTTP 요청 헤더에서 정보를 추출하는 유틸리티 클래스 */
-@Component
 public class ExtractHeaderUtil {
+
+  private ExtractHeaderUtil() {
+    // Utility class
+  }
 
   /**
    * HTTP 요청의 Authorization 헤더에서 Bearer 타입의 액세스 토큰을 추출합니다.

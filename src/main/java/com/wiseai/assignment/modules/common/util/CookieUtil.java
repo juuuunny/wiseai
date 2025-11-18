@@ -3,7 +3,6 @@ package com.wiseai.assignment.modules.common.util;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -15,9 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class CookieUtil {
-  private static final String ANONYMOUS_ID_COOKIE_NAME = "anonymousId";
-  private static final int COOKIE_EXPIRE_SECONDS = 60 * 60 * 24 * 30; // 30일
-
   @Value("${spring.profiles.active:local}")
   private String activeProfile;
 
@@ -97,15 +93,12 @@ public class CookieUtil {
     }
   }
 
-  /**
-   * 환경에 따른 쿠키 도메인을 반환합니다. dataracy.store, api.dataracy.store, dev-api.dataracy.store 간의 쿠키 공유를 위해
-   * 상위 도메인으로 설정합니다.
-   */
+  /** 환경에 따른 쿠키 도메인을 반환합니다. wiseai.com의 서브 도메인 간 쿠키 공유를 위해 상위 도메인을 사용합니다. */
   private String getCookieDomain() {
     if ("prod".equals(activeProfile)) {
-      return ".dataracy.store"; // 운영 환경: dataracy.store ↔ api.dataracy.store 쿠키 공유
+      return ".wiseai.com"; // 운영 환경: wiseai.com ↔ api.wiseai.com 쿠키 공유
     } else if ("dev".equals(activeProfile)) {
-      return ".dataracy.store"; // 개발 환경: dataracy.store ↔ dev-api.dataracy.store 쿠키 공유
+      return ".wiseai.com"; // 개발 환경: wiseai.com ↔ dev-api.wiseai.com 쿠키 공유
     } else {
       return null; // 로컬 환경: localhost에서는 도메인 설정 없음
     }
@@ -154,7 +147,7 @@ public class CookieUtil {
 
   /**
    * 로그아웃 시 모든 인증 관련 쿠키를 삭제합니다. accessToken, refreshToken, accessTokenExpiration,
-   * refreshTokenExpiration, registerToken 쿠키를 모두 삭제합니다.
+   * refreshTokenExpiration 쿠키를 모두 삭제합니다.
    *
    * @param request HTTP 요청 객체 (프로토콜 감지용)
    * @param response HTTP 응답 객체
@@ -164,30 +157,5 @@ public class CookieUtil {
     deleteCookie(request, response, "refreshToken");
     deleteCookie(request, response, "accessTokenExpiration");
     deleteCookie(request, response, "refreshTokenExpiration");
-    deleteCookie(request, response, "registerToken");
-  }
-
-  /**
-   * HTTP 요청에서 "anonymousId" 쿠키 값을 반환하거나, 존재하지 않을 경우 새로 생성하여 응답에 설정한 후 반환합니다.
-   *
-   * @param request HTTP 요청 객체
-   * @param response HTTP 응답 객체
-   * @return "anonymousId" 쿠키의 기존 값 또는 새로 생성된 UUID 문자열
-   */
-  public String getOrCreateAnonymousId(HttpServletRequest request, HttpServletResponse response) {
-    // 쿠키에서 익명id 조회 및 조회
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if (ANONYMOUS_ID_COOKIE_NAME.equals(cookie.getName())) {
-          return cookie.getValue();
-        }
-      }
-    }
-
-    // 없으면 새로 생성
-    String newAnonymousId = UUID.randomUUID().toString();
-    setCookie(request, response, ANONYMOUS_ID_COOKIE_NAME, newAnonymousId, COOKIE_EXPIRE_SECONDS);
-    return newAnonymousId;
   }
 }
