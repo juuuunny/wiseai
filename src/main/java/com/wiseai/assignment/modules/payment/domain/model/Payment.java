@@ -97,10 +97,7 @@ public class Payment {
   }
 
   public Payment cancel() {
-    if (status == PaymentStatus.COMPLETED) {
-      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
-    }
-    if (status == PaymentStatus.CANCELLED) {
+    if (status != PaymentStatus.PENDING && status != PaymentStatus.FAILED) {
       throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
     }
 
