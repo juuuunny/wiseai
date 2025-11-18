@@ -78,10 +78,7 @@ public class Reservation {
    * @return 취소된 Reservation 객체
    */
   public Reservation cancel() {
-    if (status == ReservationStatus.CANCELLED) {
-      throw new ReservationException(ReservationErrorStatus.INVALID_CANCEL_STATUS);
-    }
-    if (status == ReservationStatus.CONFIRMED) {
+    if (status != ReservationStatus.PENDING) {
       throw new ReservationException(ReservationErrorStatus.INVALID_CANCEL_STATUS);
     }
 
