@@ -147,20 +147,22 @@ jobs:
           ./gradlew jacocoTestCoverageVerification --stacktrace
           echo "✅ JaCoCo coverage verification passed"
 
-      - name: SonarQube 분석 (선택사항)
-        if: env.SONAR_TOKEN != ''
-        run: |
-          echo "========================================="
-          echo "Step: SonarQube 분석"
-          echo "========================================="
-          echo "SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}"
-          echo "SONAR_ORGANIZATION: ${{ env.SONAR_ORGANIZATION }}"
-          ./gradlew sonarqube --stacktrace || {
-            echo "⚠️ SonarQube analysis failed, but continuing..."
-            exit 0
-          }
-          echo "✅ SonarQube analysis completed successfully"
-        continue-on-error: true
+      # SonarQube 분석 비활성화 (Quality Gate 설정 완료 후 활성화 예정)
+      # 활성화하려면 아래 주석을 해제하고 `if: false`를 `if: env.SONAR_TOKEN != ''`로 변경
+      # - name: SonarQube 분석 (선택사항)
+      #   if: false  # 일단 비활성화
+      #   run: |
+      #     echo "========================================="
+      #     echo "Step: SonarQube 분석"
+      #     echo "========================================="
+      #     echo "SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}"
+      #     echo "SONAR_ORGANIZATION: ${{ env.SONAR_ORGANIZATION }}"
+      #     ./gradlew sonarqube --stacktrace || {
+      #       echo "⚠️ SonarQube analysis failed, but continuing..."
+      #       exit 0
+      #     }
+      #     echo "✅ SonarQube analysis completed successfully"
+      #   continue-on-error: true
 
       - name: Upload Jacoco HTML report
         uses: actions/upload-artifact@v4

@@ -17,7 +17,9 @@ import com.wiseai.assignment.modules.common.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class AuthController implements AuthApi {
@@ -25,9 +27,6 @@ public class AuthController implements AuthApi {
   private final SelfLoginUseCase selfLoginUseCase;
   private final ReIssueTokenUseCase reIssueTokenUseCase;
   private final CookieUtil cookieUtil;
-
-  // 쿠키 이름 상수
-  private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 
   /**
    * 자체 로그인 요청을 처리하고, 인증에 성공하면 액세스 토큰과 리프레시 토큰을 HTTP 쿠키에 저장한다.
@@ -41,9 +40,11 @@ public class AuthController implements AuthApi {
   @Override
   public ResponseEntity<SuccessResponse<Void>> login(
       SelfLoginWebRequest webRequest, HttpServletRequest request, HttpServletResponse response) {
+    log.debug("로그인 요청: email={}", webRequest.email());
     SelfLoginRequest requestDto = authWebMapper.toApplicationDto(webRequest);
     ReIssueTokenResponse responseDto = selfLoginUseCase.login(requestDto);
     setResponseHeaders(request, response, responseDto);
+    log.info("로그인 성공: email={}", webRequest.email());
     return ResponseEntity.ok(SuccessResponse.of(AuthSuccessStatus.OK_SELF_LOGIN));
   }
 
@@ -57,10 +58,12 @@ public class AuthController implements AuthApi {
   @Override
   public ResponseEntity<SuccessResponse<Void>> reIssueToken(
       String refreshToken, HttpServletRequest request, HttpServletResponse response) {
+    log.debug("토큰 재발급 요청");
     // 토큰 재발급 진행
     ReIssueTokenResponse responseDto = reIssueTokenUseCase.reIssueToken(refreshToken);
     // 어세스 토큰, 어세스 토큰 만료기간, 리프레시 토큰 쿠키 저장
     setResponseHeaders(request, response, responseDto);
+    log.info("토큰 재발급 성공");
     return ResponseEntity.status(HttpStatus.OK)
         .body(SuccessResponse.of(AuthSuccessStatus.OK_RE_ISSUE_TOKEN));
   }
@@ -74,30 +77,12 @@ public class AuthController implements AuthApi {
    */
   private void setResponseHeaders(
       HttpServletRequest request, HttpServletResponse response, ReIssueTokenResponse responseDto) {
-    long accessTokenExpirationSeconds = responseDto.accessTokenExpiration() / 1000;
-    int accessTokenMaxAge =
-        accessTokenExpirationSeconds > Integer.MAX_VALUE
-            ? Integer.MAX_VALUE
-            : (int) accessTokenExpirationSeconds;
-    cookieUtil.setCookie(
-        request, response, "accessToken", responseDto.accessToken(), accessTokenMaxAge);
-    cookieUtil.setCookie(
+    cookieUtil.setTokenCookies(
         request,
         response,
-        "accessTokenExpiration",
-        String.valueOf(((long) accessTokenMaxAge) * 1000),
-        accessTokenMaxAge);
-
-    long refreshTokenExpirationSeconds = responseDto.refreshTokenExpiration() / 1000;
-    int refreshTokenMaxAge =
-        refreshTokenExpirationSeconds > Integer.MAX_VALUE
-            ? Integer.MAX_VALUE
-            : (int) refreshTokenExpirationSeconds;
-    cookieUtil.setCookie(
-        request,
-        response,
-        REFRESH_TOKEN_COOKIE_NAME,
+        responseDto.accessToken(),
         responseDto.refreshToken(),
-        refreshTokenMaxAge);
+        responseDto.accessTokenExpiration(),
+        responseDto.refreshTokenExpiration());
   }
 }

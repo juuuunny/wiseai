@@ -37,7 +37,9 @@ public interface AuthApi {
       security = {})
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "200", description = "자체로그인 성공", useReturnTypeSchema = true)
+        @ApiResponse(responseCode = "200", description = "자체로그인 성공", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (이메일/비밀번호 형식 오류)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패 (이메일 또는 비밀번호 불일치)")
       })
   @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
   ResponseEntity<SuccessResponse<Void>> login(
@@ -63,7 +65,9 @@ public interface AuthApi {
       security = {})
   @ApiResponses(
       value = {
-        @ApiResponse(responseCode = "200", description = "토큰 재발급 성공", useReturnTypeSchema = true)
+        @ApiResponse(responseCode = "200", description = "토큰 재발급 성공", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (리프레시 토큰 누락)"),
+        @ApiResponse(responseCode = "401", description = "인증 실패 (유효하지 않은 리프레시 토큰)")
       })
   @PostMapping(value = "/token/re-issue")
   ResponseEntity<SuccessResponse<Void>> reIssueToken(
