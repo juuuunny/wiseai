@@ -121,4 +121,17 @@ class PaymentTest {
     // then
     assertThat(cancelled.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
   }
+
+  @Test
+  @DisplayName("결제 취소 실패 - 완료된 결제")
+  void cancelPayment_fail_completed() {
+    // given
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment completed = payment.withId(DEFAULT_PAYMENT_ID).complete("txn_123");
+
+    // when & then
+    assertThatThrownBy(() -> completed.cancel())
+        .isInstanceOf(PaymentException.class)
+        .hasMessage(PaymentErrorStatus.INVALID_STATUS.getMessage());
+  }
 }
