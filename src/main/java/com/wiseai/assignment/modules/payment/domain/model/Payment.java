@@ -64,6 +64,13 @@ public class Payment {
   }
 
   public Payment complete(String transactionId) {
+    if (status != PaymentStatus.PENDING) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
+    if (transactionId == null || transactionId.isBlank()) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_TRANSACTION_ID);
+    }
+
     return Payment.builder()
         .id(id)
         .reservationId(reservationId)
@@ -75,6 +82,10 @@ public class Payment {
   }
 
   public Payment fail() {
+    if (status != PaymentStatus.PENDING) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
+
     return Payment.builder()
         .id(id)
         .reservationId(reservationId)
