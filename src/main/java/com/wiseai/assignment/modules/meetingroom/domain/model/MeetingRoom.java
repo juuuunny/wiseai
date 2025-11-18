@@ -55,6 +55,10 @@ public class MeetingRoom {
         .build();
   }
 
+  public boolean canAccommodate(int headCount) {
+    return headCount > 0 && headCount <= capacity;
+  }
+
   private static void validateName(String name) {
     if (name == null || name.isBlank()) {
       throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_NAME);
