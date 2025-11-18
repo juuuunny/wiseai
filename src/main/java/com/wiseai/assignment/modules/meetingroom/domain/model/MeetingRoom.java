@@ -59,6 +59,15 @@ public class MeetingRoom {
     return headCount > 0 && headCount <= capacity;
   }
 
+  public BigDecimal calculateFee(int minutes) {
+    if (minutes <= 0) {
+      throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_HOURLY_FEE);
+    }
+    return hourlyFee
+        .multiply(BigDecimal.valueOf(minutes))
+        .divide(BigDecimal.valueOf(60), BigDecimal.ROUND_HALF_UP);
+  }
+
   private static void validateName(String name) {
     if (name == null || name.isBlank()) {
       throw new MeetingRoomException(MeetingRoomErrorStatus.INVALID_NAME);
