@@ -95,4 +95,15 @@ public class Payment {
         .transactionId(transactionId)
         .build();
   }
+
+  public Payment cancel() {
+    return Payment.builder()
+        .id(id)
+        .reservationId(reservationId)
+        .paymentMethod(paymentMethod)
+        .amount(amount)
+        .status(PaymentStatus.CANCELLED)
+        .transactionId(transactionId)
+        .build();
+  }
 }
