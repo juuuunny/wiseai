@@ -81,4 +81,44 @@ class PaymentTest {
         .isInstanceOf(PaymentException.class)
         .hasMessage(PaymentErrorStatus.INVALID_AMOUNT.getMessage());
   }
+
+  @Test
+  @DisplayName("결제 완료 실패 - 잘못된 상태")
+  void completePayment_fail_invalidStatus() {
+    // given
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment completed = payment.withId(DEFAULT_PAYMENT_ID).complete("txn_123");
+
+    // when & then
+    assertThatThrownBy(() -> completed.complete("txn_456"))
+        .isInstanceOf(PaymentException.class)
+        .hasMessage(PaymentErrorStatus.INVALID_STATUS.getMessage());
+  }
+
+  @Test
+  @DisplayName("결제 완료 실패 - 빈 거래 ID")
+  void completePayment_fail_emptyTransactionId() {
+    // given
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+
+    // when & then
+    assertThatThrownBy(() -> paymentWithId.complete(""))
+        .isInstanceOf(PaymentException.class)
+        .hasMessage(PaymentErrorStatus.INVALID_TRANSACTION_ID.getMessage());
+  }
+
+  @Test
+  @DisplayName("결제 취소 성공")
+  void cancelPayment_success() {
+    // given
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+
+    // when
+    Payment cancelled = paymentWithId.cancel();
+
+    // then
+    assertThat(cancelled.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
+  }
 }
