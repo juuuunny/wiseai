@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
+import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
+import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -20,12 +22,34 @@ public class Payment {
   private final String transactionId;
 
   public static Payment create(Long reservationId, PaymentMethod paymentMethod, BigDecimal amount) {
+    validateReservationId(reservationId);
+    validateAmount(amount);
+    validatePaymentMethod(paymentMethod);
+
     return Payment.builder()
         .reservationId(reservationId)
         .paymentMethod(paymentMethod)
         .amount(amount)
         .status(PaymentStatus.PENDING)
         .build();
+  }
+
+  private static void validateReservationId(Long reservationId) {
+    if (reservationId == null || reservationId < 1) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_RESERVATION_ID);
+    }
+  }
+
+  private static void validateAmount(BigDecimal amount) {
+    if (amount == null || amount.signum() <= 0) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_AMOUNT);
+    }
+  }
+
+  private static void validatePaymentMethod(PaymentMethod paymentMethod) {
+    if (paymentMethod == null) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_PAYMENT_METHOD);
+    }
   }
 
   public Payment withId(Long id) {
