@@ -19,7 +19,8 @@ public class MeetingRoom {
   private final BigDecimal hourlyFee;
   private final String description;
 
-  public static MeetingRoom create(String name, Integer capacity, BigDecimal hourlyFee, String description) {
+  public static MeetingRoom create(
+      String name, Integer capacity, BigDecimal hourlyFee, String description) {
     validateName(name);
     validateCapacity(capacity);
     validateHourlyFee(hourlyFee);
@@ -42,7 +43,8 @@ public class MeetingRoom {
         .build();
   }
 
-  public MeetingRoom updateInfo(String name, Integer capacity, BigDecimal hourlyFee, String description) {
+  public MeetingRoom updateInfo(
+      String name, Integer capacity, BigDecimal hourlyFee, String description) {
     validateName(name);
     validateCapacity(capacity);
     validateHourlyFee(hourlyFee);
@@ -90,4 +92,3 @@ public class MeetingRoom {
     }
   }
 }
-

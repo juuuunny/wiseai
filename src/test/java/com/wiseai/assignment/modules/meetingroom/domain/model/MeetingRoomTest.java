@@ -5,18 +5,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
-import com.wiseai.assignment.modules.meetingroom.domain.exception.MeetingRoomException;
-import com.wiseai.assignment.modules.meetingroom.domain.status.MeetingRoomErrorStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.wiseai.assignment.modules.meetingroom.domain.exception.MeetingRoomException;
+import com.wiseai.assignment.modules.meetingroom.domain.status.MeetingRoomErrorStatus;
 
 class MeetingRoomTest {
 
   @Test
   @DisplayName("회의실 생성 성공")
   void createMeetingRoom_success() {
-    MeetingRoom meetingRoom =
-        MeetingRoom.create("Maple", 6, new BigDecimal("15000"), "화이트보드 준비");
+    MeetingRoom meetingRoom = MeetingRoom.create("Maple", 6, new BigDecimal("15000"), "화이트보드 준비");
 
     assertThat(meetingRoom.getName()).isEqualTo("Maple");
     assertThat(meetingRoom.getCapacity()).isEqualTo(6);
@@ -50,11 +50,9 @@ class MeetingRoomTest {
   @Test
   @DisplayName("회의실 정보 수정 성공")
   void updateMeetingRoom_success() {
-    MeetingRoom meetingRoom =
-        MeetingRoom.create("Alpha", 8, new BigDecimal("20000"), null);
+    MeetingRoom meetingRoom = MeetingRoom.create("Alpha", 8, new BigDecimal("20000"), null);
 
-    MeetingRoom updated =
-        meetingRoom.updateInfo("Beta", 10, new BigDecimal("25000"), "프로젝터 준비");
+    MeetingRoom updated = meetingRoom.updateInfo("Beta", 10, new BigDecimal("25000"), "프로젝터 준비");
 
     assertThat(updated.getName()).isEqualTo("Beta");
     assertThat(updated.getCapacity()).isEqualTo(10);
@@ -90,4 +88,3 @@ class MeetingRoomTest {
         .hasMessage(MeetingRoomErrorStatus.INVALID_HOURLY_FEE.getMessage());
   }
 }
-

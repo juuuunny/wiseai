@@ -7,9 +7,7 @@ import com.wiseai.assignment.modules.common.status.BaseErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * 회의실 도메인에서 공통으로 사용하는 에러 코드.
- */
+/** 회의실 도메인에서 공통으로 사용하는 에러 코드. */
 @Getter
 @RequiredArgsConstructor
 public enum MeetingRoomErrorStatus implements BaseErrorCode {
@@ -21,4 +19,3 @@ public enum MeetingRoomErrorStatus implements BaseErrorCode {
   private final String code;
   private final String message;
 }
-
