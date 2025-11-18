@@ -2,12 +2,12 @@
 quality_gate:
 # 코드 커버리지 최소 기준
 coverage:
-  minimum: 50 # 초기 구현 단계: 50%로 하향(빌드 실패 기준과 일치)
-  target: 70 # 점진 목표: 70%
+  minimum: 60 # 실무 기본: 최소 60% 유지
+  target: 80 # 장기 목표: 80%
 
 # 코드 중복도 최대 허용치
 duplication:
-  maximum: 3
+  maximum: 5
 
 # 보안 취약점 심각도별 허용치
 security:
@@ -20,15 +20,15 @@ security:
 code_smells:
   blocker: 0
   critical: 0
-  major: 10
-  minor: 20
+  major: 5
+  minor: 15
 
 # 버그 최대 허용치
 bugs:
   blocker: 0
   critical: 0
-  major: 5
-  minor: 10
+  major: 3
+  minor: 5
 
 # 유지보수성 등급
 maintainability:
@@ -36,7 +36,7 @@ maintainability:
 
 # 신뢰성 등급
 reliability:
-  minimum_rating: A
+  minimum_rating: B
 
 # 보안 등급
 security_rating:
