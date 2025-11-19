@@ -60,6 +60,7 @@ payment:
   kafka:
     topics:
       process: payment.process
+      process-dlq: payment.process.dlq
 
 ---
 spring:

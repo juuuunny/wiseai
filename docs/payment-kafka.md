@@ -17,8 +17,8 @@
 - 중복 이벤트인 경우 PG 호출/상태 변경을 건너뜀
 
 ## 장애 대응
-- Kafka listener는 Spring Retry(기본)로 일정 횟수 재시도 후 DLQ 토픽(`payment.process.dlq`)으로 위임
-- DLQ 레코드는 향후 수동 재처리 대상
+- 결제 처리 실패 시 `payment.process.dlq` 토픽으로 이벤트 이동 (`PaymentDlqProducer`)
+- DLQ 레코드는 별도 재처리 스크립트/배치로 복구 예정
 
 ## Outbox 고려
 - 현재 단계에서는 트랜잭션 싱크 후 `KafkaTemplate` 송신

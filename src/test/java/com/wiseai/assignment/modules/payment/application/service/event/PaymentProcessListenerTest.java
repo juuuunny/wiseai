@@ -36,6 +36,7 @@ class PaymentProcessListenerTest {
   @Mock private PaymentGatewayFactory paymentGatewayFactory;
   @Mock private PaymentGateway paymentGateway;
   @Mock private PaymentProcessLogService paymentProcessLogService;
+  @Mock private PaymentDlqProducer paymentDlqProducer;
 
   @InjectMocks private PaymentProcessListener paymentProcessListener;
 
@@ -114,13 +115,13 @@ class PaymentProcessListenerTest {
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
         .willReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
 
-    try {
-      paymentProcessListener.handleMessage(message);
-    } catch (RuntimeException ignored) {
-      // expected
-    }
+    paymentProcessListener.handleMessage(message);
 
     verify(paymentProcessLogService).release("event-fail");
+    verify(paymentDlqProducer)
+        .publishProcessFailure(
+            org.mockito.Mockito.eq(message),
+            org.mockito.Mockito.any(RuntimeException.class));
   }
 }
 

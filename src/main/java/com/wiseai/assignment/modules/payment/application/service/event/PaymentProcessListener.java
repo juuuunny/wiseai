@@ -22,6 +22,7 @@ public class PaymentProcessListener {
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentGatewayFactory paymentGatewayFactory;
   private final PaymentProcessLogService paymentProcessLogService;
+  private final PaymentDlqProducer paymentDlqProducer;
 
   @KafkaListener(topics = "${payment.kafka.topics.process}")
   public void handleMessage(PaymentProcessMessage message) {
@@ -56,8 +57,8 @@ public class PaymentProcessListener {
       paymentProcessLogService.release(message.eventId());
       Payment failed = payment.fail();
       paymentCommandPort.update(failed);
-      log.error("결제 처리 실패: paymentId={}", message.paymentId(), e);
-      throw e;
+      paymentDlqProducer.publishProcessFailure(message, e);
+      log.error("결제 처리 실패 - DLQ로 이동: paymentId={}", message.paymentId(), e);
     }
   }
 }

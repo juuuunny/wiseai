@@ -11,5 +11,8 @@ public class PaymentKafkaTopicsProperties {
 
   /** 결제 처리 토픽. */
   private String process = "payment.process";
+
+  /** 결제 처리 DLQ 토픽. */
+  private String processDlq = "payment.process.dlq";
 }
 
