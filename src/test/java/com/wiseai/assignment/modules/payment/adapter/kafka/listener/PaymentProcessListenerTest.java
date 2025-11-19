@@ -31,6 +31,10 @@ import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
+import com.wiseai.assignment.modules.reservation.application.port.out.command.ReservationCommandPort;
+import com.wiseai.assignment.modules.reservation.application.port.out.query.ReservationQueryPort;
+import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
+import com.wiseai.assignment.modules.reservation.domain.model.Reservation;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentProcessListener 테스트")
@@ -41,6 +45,8 @@ class PaymentProcessListenerTest {
   @Mock private PaymentGatewayFactory paymentGatewayFactory;
   @Mock private PaymentGateway paymentGateway;
   @Mock private PaymentProcessLogService paymentProcessLogService;
+  @Mock private ReservationQueryPort reservationQueryPort;
+  @Mock private ReservationCommandPort reservationCommandPort;
 
   @InjectMocks private PaymentProcessListener paymentProcessListener;
 
@@ -51,11 +57,16 @@ class PaymentProcessListenerTest {
   private static final String DEFAULT_TRANSACTION_ID = "txn-1";
 
   @Test
-  @DisplayName("결제 처리 성공 시 상태가 COMPLETED로 변경되고 멱등 로그가 처리 완료된다")
+  @DisplayName("결제 처리 성공 시 상태가 COMPLETED로 변경되고 예약이 CONFIRMED로 확정된다")
   void handleMessage_success() {
     // given
     Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
     Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+
+    java.time.LocalDateTime startTime = java.time.LocalDateTime.of(2024, 1, 1, 10, 0);
+    java.time.LocalDateTime endTime = java.time.LocalDateTime.of(2024, 1, 1, 11, 0);
+    Reservation reservation = Reservation.create(1L, 1L, startTime, endTime, DEFAULT_AMOUNT);
+    Reservation reservationWithId = reservation.withId(DEFAULT_RESERVATION_ID);
 
     PaymentProcessMessage message =
         new PaymentProcessMessage(
@@ -73,16 +84,24 @@ class PaymentProcessListenerTest {
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
         .willReturn(CompletableFuture.completedFuture(DEFAULT_TRANSACTION_ID));
+    given(reservationQueryPort.findById(DEFAULT_RESERVATION_ID))
+        .willReturn(Optional.of(reservationWithId));
 
     // when
     paymentProcessListener.handleMessage(message);
 
     // then
-    ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
-    verify(paymentCommandPort).update(captor.capture());
-    Payment updated = captor.getValue();
-    assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
-    assertThat(updated.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
+    ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+    verify(paymentCommandPort).update(paymentCaptor.capture());
+    Payment updatedPayment = paymentCaptor.getValue();
+    assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(updatedPayment.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
+
+    ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
+    verify(reservationCommandPort).update(reservationCaptor.capture());
+    Reservation updatedReservation = reservationCaptor.getValue();
+    assertThat(updatedReservation.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+
     verify(paymentProcessLogService).markProcessed(DEFAULT_EVENT_ID, DEFAULT_PAYMENT_ID);
     verify(paymentProcessLogService, never()).release(any()); // 성공 시 release 호출 안 됨
   }
@@ -113,6 +132,7 @@ class PaymentProcessListenerTest {
     verify(paymentProcessLogService, never()).tryAcquire(any(), any());
     verify(paymentGatewayFactory, never()).getGateway(any());
     verify(paymentCommandPort, never()).update(any());
+    verify(reservationCommandPort, never()).update(any());
     verify(paymentProcessLogService, never()).markProcessed(any(), any());
   }
 

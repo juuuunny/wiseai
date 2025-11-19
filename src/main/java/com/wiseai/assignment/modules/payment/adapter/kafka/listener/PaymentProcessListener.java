@@ -13,6 +13,11 @@ import com.wiseai.assignment.modules.payment.application.service.infrastructure.
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
+import com.wiseai.assignment.modules.reservation.application.port.out.command.ReservationCommandPort;
+import com.wiseai.assignment.modules.reservation.application.port.out.query.ReservationQueryPort;
+import com.wiseai.assignment.modules.reservation.domain.exception.ReservationException;
+import com.wiseai.assignment.modules.reservation.domain.model.Reservation;
+import com.wiseai.assignment.modules.reservation.domain.status.ReservationErrorStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +31,8 @@ public class PaymentProcessListener {
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentGatewayFactory paymentGatewayFactory;
   private final PaymentProcessLogService paymentProcessLogService;
+  private final ReservationQueryPort reservationQueryPort;
+  private final ReservationCommandPort reservationCommandPort;
 
   @KafkaListener(
       topics = "${payment.kafka.topics.process}",
@@ -59,8 +66,29 @@ public class PaymentProcessListener {
           gateway.processPayment(payment.getAmount(), payment.getReservationId()).join();
       Payment completed = payment.complete(transactionId);
       paymentCommandPort.update(completed);
+
+      // 결제 완료 시 예약 상태 확정
+      Reservation reservation =
+          reservationQueryPort
+              .findById(payment.getReservationId())
+              .orElseThrow(
+                  () -> {
+                    log.error(
+                        "예약을 찾을 수 없음: reservationId={}, paymentId={}",
+                        payment.getReservationId(),
+                        message.paymentId());
+                    return new ReservationException(ReservationErrorStatus.NOT_FOUND);
+                  });
+
+      Reservation confirmed = reservation.confirm();
+      reservationCommandPort.update(confirmed);
+
       paymentProcessLogService.markProcessed(message.eventId(), message.paymentId());
-      log.info("결제 처리 성공: paymentId={}, transactionId={}", message.paymentId(), transactionId);
+      log.info(
+          "결제 처리 및 예약 확정 완료: paymentId={}, transactionId={}, reservationId={}",
+          message.paymentId(),
+          transactionId,
+          payment.getReservationId());
     } catch (Exception e) {
       log.error(
           "결제 처리 중 오류 발생: eventId={}, paymentId={}, error={}",
