@@ -22,15 +22,8 @@ import com.wiseai.assignment.modules.meetingroom.application.port.out.command.Me
 import com.wiseai.assignment.modules.meetingroom.application.port.out.query.MeetingRoomQueryPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
-import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
-import com.wiseai.assignment.modules.payment.domain.model.Payment;
-import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
-import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
-import com.wiseai.assignment.modules.reservation.application.port.out.query.ReservationQueryPort;
-import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
-import com.wiseai.assignment.modules.reservation.domain.model.Reservation;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
@@ -44,10 +37,7 @@ class ReservationPaymentIntegrationTest {
   @Autowired private CreateReservationUseCase createReservationUseCase;
   @Autowired private ProcessReservationPaymentUseCase processReservationPaymentUseCase;
   @Autowired private GetPaymentStatusUseCase getPaymentStatusUseCase;
-  @Autowired private ReservationQueryPort reservationQueryPort;
-  @Autowired private PaymentQueryPort paymentQueryPort;
   @Autowired private MeetingRoomCommandPort meetingRoomCommandPort;
-  @Autowired private MeetingRoomQueryPort meetingRoomQueryPort;
 
   @MockBean private org.redisson.api.RedissonClient redissonClient;
 
