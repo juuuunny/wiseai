@@ -2,6 +2,8 @@ package com.wiseai.assignment.modules.meetingroom.adapter.web.api;
 
 import java.util.List;
 
+import jakarta.validation.constraints.Min;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Min;
 
 @Tag(name = "MeetingRoom", description = "회의실 관리 API")
 public interface MeetingRoomApi {

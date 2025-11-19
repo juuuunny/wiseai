@@ -1,9 +1,10 @@
 package com.wiseai.assignment.modules.auth.adapter.web.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "자체 로그인을 위한 Web 요청")
 public record SelfLoginWebRequest(

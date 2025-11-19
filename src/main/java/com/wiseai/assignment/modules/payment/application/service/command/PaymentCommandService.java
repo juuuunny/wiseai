@@ -11,6 +11,8 @@ import com.wiseai.assignment.modules.payment.application.port.in.command.Complet
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
@@ -27,6 +29,8 @@ public class PaymentCommandService
 
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentQueryPort paymentQueryPort;
+  private final PaymentEventProducer paymentEventProducer;
+  private final PaymentCancelEventProducer paymentCancelEventProducer;
 
   @Override
   @Transactional
@@ -40,6 +44,8 @@ public class PaymentCommandService
 
     Payment payment = Payment.create(reservationId, paymentMethod, amount);
     Payment saved = paymentCommandPort.save(payment);
+
+    paymentEventProducer.publishPaymentRequested(saved);
 
     log.debug("결제 생성 완료: paymentId={}", saved.getId());
     return toResponse(saved);
@@ -80,11 +86,15 @@ public class PaymentCommandService
                   return new PaymentException(PaymentErrorStatus.NOT_FOUND);
                 });
 
-    Payment cancelled = payment.cancel();
-    Payment updated = paymentCommandPort.update(cancelled);
+    if (payment.getTransactionId() == null) {
+      log.warn("거래 ID 없이 결제 취소 요청: paymentId={}", id);
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
 
-    log.debug("결제 취소 완료: paymentId={}", updated.getId());
-    return toResponse(updated);
+    paymentCancelEventProducer.publishPaymentCancelRequested(payment);
+
+    log.debug("결제 취소 이벤트 발행 완료: paymentId={}", payment.getId());
+    return toResponse(payment);
   }
 
   private PaymentResponse toResponse(Payment payment) {

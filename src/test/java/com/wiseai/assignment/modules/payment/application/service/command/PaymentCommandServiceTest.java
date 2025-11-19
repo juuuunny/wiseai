@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -18,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
@@ -30,6 +33,8 @@ class PaymentCommandServiceTest {
 
   @Mock private PaymentCommandPort paymentCommandPort;
   @Mock private PaymentQueryPort paymentQueryPort;
+  @Mock private PaymentEventProducer paymentEventProducer;
+  @Mock private PaymentCancelEventProducer paymentCancelEventProducer;
 
   @InjectMocks private PaymentCommandService paymentCommandService;
 
@@ -58,6 +63,8 @@ class PaymentCommandServiceTest {
     assertThat(result.paymentMethod()).isEqualTo(PaymentMethod.TOSS);
     assertThat(result.amount()).isEqualByComparingTo(DEFAULT_AMOUNT);
     assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
+
+    verify(paymentEventProducer).publishPaymentRequested(saved);
   }
 
   @Test
@@ -102,19 +109,33 @@ class PaymentCommandServiceTest {
   @DisplayName("결제 취소 성공")
   void cancelPayment_success() {
     // given
-    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
-    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
-    Payment cancelled = paymentWithId.cancel();
+    Payment payment =
+        Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT)
+            .withId(DEFAULT_PAYMENT_ID)
+            .complete(DEFAULT_TRANSACTION_ID);
 
-    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
-    given(paymentCommandPort.update(any(Payment.class))).willReturn(cancelled);
+    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(payment));
 
     // when
     PaymentResponse result = paymentCommandService.cancelPayment(DEFAULT_PAYMENT_ID);
 
     // then
     assertThat(result.id()).isEqualTo(DEFAULT_PAYMENT_ID);
-    assertThat(result.status()).isEqualTo(PaymentStatus.CANCELLED);
+    assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
+    verify(paymentCancelEventProducer).publishPaymentCancelRequested(payment);
+  }
+
+  @Test
+  @DisplayName("결제 취소 실패 - 거래 ID 없음")
+  void cancelPayment_fail_noTransaction() {
+    Payment payment =
+        Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT)
+            .withId(DEFAULT_PAYMENT_ID);
+
+    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(payment));
+
+    assertThatThrownBy(() -> paymentCommandService.cancelPayment(DEFAULT_PAYMENT_ID))
+        .isInstanceOf(PaymentException.class);
   }
 
   @Test

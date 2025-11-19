@@ -1,5 +1,8 @@
 package com.wiseai.assignment.modules.user.adapter.web.api;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +16,6 @@ import com.wiseai.assignment.modules.user.application.dto.request.SelfSignUpRequ
 import com.wiseai.assignment.modules.user.application.port.in.command.SelfSignUpUseCase;
 import com.wiseai.assignment.modules.user.domain.status.UserSuccessStatus;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

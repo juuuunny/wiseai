@@ -2,6 +2,9 @@ package com.wiseai.assignment.modules.security.handler;
 
 import java.io.IOException;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -14,8 +17,6 @@ import com.wiseai.assignment.modules.common.status.BaseErrorCode;
 import com.wiseai.assignment.modules.common.status.CommonErrorStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * 서비스와 관련된 에러사항은 ControllerAdvice에서 처리할 수 있지만 securityContext내의 에러사항은 시큐리티의 exceptionHandling에서

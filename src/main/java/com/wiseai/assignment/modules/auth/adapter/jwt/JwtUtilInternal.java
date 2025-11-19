@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.crypto.SecretKey;
 
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.wiseai.assignment.modules.auth.domain.enums.TokenType;
@@ -16,7 +18,6 @@ import com.wiseai.assignment.modules.common.status.CommonErrorStatus;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Component

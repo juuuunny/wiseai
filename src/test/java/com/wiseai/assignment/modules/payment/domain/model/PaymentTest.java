@@ -123,14 +123,27 @@ class PaymentTest {
   }
 
   @Test
-  @DisplayName("결제 취소 실패 - 완료된 결제")
-  void cancelPayment_fail_completed() {
-    // given
-    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
-    Payment completed = payment.withId(DEFAULT_PAYMENT_ID).complete("txn_123");
+  @DisplayName("결제 취소 성공 - 완료된 결제")
+  void cancelPayment_success_completed() {
+    Payment completed =
+        Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT)
+            .withId(DEFAULT_PAYMENT_ID)
+            .complete("txn_123");
 
-    // when & then
-    assertThatThrownBy(() -> completed.cancel())
+    Payment cancelled = completed.cancel();
+
+    assertThat(cancelled.getStatus()).isEqualTo(PaymentStatus.CANCELLED);
+  }
+
+  @Test
+  @DisplayName("결제 취소 실패 - 이미 취소됨")
+  void cancelPayment_fail_alreadyCancelled() {
+    Payment cancelled =
+        Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT)
+            .withId(DEFAULT_PAYMENT_ID)
+            .cancel();
+
+    assertThatThrownBy(cancelled::cancel)
         .isInstanceOf(PaymentException.class)
         .hasMessage(PaymentErrorStatus.INVALID_STATUS.getMessage());
   }
