@@ -91,7 +91,7 @@ public class PaymentCommandService
       throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
     }
 
-    paymentCancelEventProducer.publishCancellationRequested(payment);
+    paymentCancelEventProducer.publishPaymentCancelRequested(payment);
 
     log.debug("결제 취소 이벤트 발행 완료: paymentId={}", payment.getId());
     return toResponse(payment);
