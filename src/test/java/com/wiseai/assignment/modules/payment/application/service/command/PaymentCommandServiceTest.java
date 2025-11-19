@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
+import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
+import com.wiseai.assignment.modules.payment.application.service.gateway.PaymentGatewayFactory;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
@@ -30,6 +33,8 @@ class PaymentCommandServiceTest {
 
   @Mock private PaymentCommandPort paymentCommandPort;
   @Mock private PaymentQueryPort paymentQueryPort;
+  @Mock private PaymentGatewayFactory paymentGatewayFactory;
+  @Mock private PaymentGateway paymentGateway;
 
   @InjectMocks private PaymentCommandService paymentCommandService;
 
@@ -46,6 +51,9 @@ class PaymentCommandServiceTest {
     Payment saved = payment.withId(DEFAULT_PAYMENT_ID);
 
     given(paymentCommandPort.save(any(Payment.class))).willReturn(saved);
+    given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
+    given(paymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
+        .willReturn(CompletableFuture.completedFuture(DEFAULT_TRANSACTION_ID));
 
     // when
     PaymentResponse result =
@@ -108,6 +116,7 @@ class PaymentCommandServiceTest {
 
     given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
     given(paymentCommandPort.update(any(Payment.class))).willReturn(cancelled);
+    // transactionId가 null이므로 PaymentGateway 호출 안 됨
 
     // when
     PaymentResponse result = paymentCommandService.cancelPayment(DEFAULT_PAYMENT_ID);
