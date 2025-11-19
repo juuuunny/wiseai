@@ -2,10 +2,6 @@ package com.wiseai.assignment.modules.payment.adapter.jpa.entity;
 
 import java.math.BigDecimal;
 
-import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

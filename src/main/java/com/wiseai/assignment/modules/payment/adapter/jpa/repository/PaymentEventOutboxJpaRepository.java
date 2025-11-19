@@ -2,6 +2,8 @@ package com.wiseai.assignment.modules.payment.adapter.jpa.repository;
 
 import java.util.List;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -10,8 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
 import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity.OutboxStatus;
-
-import jakarta.persistence.LockModeType;
 
 @Repository
 public interface PaymentEventOutboxJpaRepository

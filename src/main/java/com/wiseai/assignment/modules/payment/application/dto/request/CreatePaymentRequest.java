@@ -2,11 +2,11 @@ package com.wiseai.assignment.modules.payment.application.dto.request;
 
 import java.math.BigDecimal;
 
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
-
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 
 /**
  * 결제 생성을 위한 요청 객체

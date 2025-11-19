@@ -2,14 +2,15 @@ package com.wiseai.assignment.modules.payment.adapter.jpa.entity;
 
 import java.time.LocalDateTime;
 
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

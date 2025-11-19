@@ -2,14 +2,15 @@ package com.wiseai.assignment.modules.meetingroom.adapter.jpa.entity;
 
 import java.math.BigDecimal;
 
-import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

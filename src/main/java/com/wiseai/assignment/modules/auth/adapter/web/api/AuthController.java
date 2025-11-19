@@ -1,5 +1,8 @@
 package com.wiseai.assignment.modules.auth.adapter.web.api;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,8 +17,6 @@ import com.wiseai.assignment.modules.auth.domain.status.AuthSuccessStatus;
 import com.wiseai.assignment.modules.common.dto.response.SuccessResponse;
 import com.wiseai.assignment.modules.common.util.CookieUtil;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

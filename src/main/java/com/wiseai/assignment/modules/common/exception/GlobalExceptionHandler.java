@@ -3,6 +3,8 @@ package com.wiseai.assignment.modules.common.exception;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.validation.ConstraintViolationException;
+
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +27,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.wiseai.assignment.modules.common.dto.response.ErrorResponse;
 import com.wiseai.assignment.modules.common.status.CommonErrorStatus;
 
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

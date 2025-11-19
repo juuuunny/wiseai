@@ -160,7 +160,7 @@ spotless {
 		googleJavaFormat('1.19.2')
 
 		// Import 정리 - 표준 순서로 자동 정렬
-		importOrder('java', 'javax', 'org', 'com.wiseai', '')
+		importOrder('java', 'javax', 'jakarta', 'org', 'com.wiseai', '')
 		removeUnusedImports()  // 사용하지 않는 import 자동 제거
 
 		// 기타 포맷팅 규칙
