@@ -22,6 +22,7 @@ import com.wiseai.assignment.modules.meetingroom.application.port.out.command.Me
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 import com.wiseai.assignment.modules.payment.adapter.kafka.relay.PaymentOutboxRelay;
 import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentDlqProducer;
 import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
@@ -49,6 +50,7 @@ class MockPaymentApiIntegrationTest {
   @MockBean private org.redisson.api.RedissonClient redissonClient;
   @MockBean private PaymentEventProducer paymentEventProducer;
   @MockBean private PaymentCancelEventProducer paymentCancelEventProducer;
+  @MockBean private PaymentDlqProducer paymentDlqProducer;
   @MockBean private PaymentOutboxRelay paymentOutboxRelay;
 
   private Long meetingRoomId;
