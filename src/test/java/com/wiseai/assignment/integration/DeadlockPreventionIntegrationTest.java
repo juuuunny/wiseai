@@ -21,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.wiseai.assignment.modules.meetingroom.application.port.out.command.MeetingRoomCommandPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
+import com.wiseai.assignment.modules.payment.adapter.kafka.relay.PaymentOutboxRelay;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
 import com.wiseai.assignment.modules.reservation.domain.exception.ReservationException;
@@ -36,6 +39,9 @@ class DeadlockPreventionIntegrationTest {
   @Autowired private MeetingRoomCommandPort meetingRoomCommandPort;
 
   @MockBean private org.redisson.api.RedissonClient redissonClient;
+  @MockBean private PaymentEventProducer paymentEventProducer;
+  @MockBean private PaymentCancelEventProducer paymentCancelEventProducer;
+  @MockBean private PaymentOutboxRelay paymentOutboxRelay;
 
   private Long meetingRoomId1;
   private Long meetingRoomId2;
