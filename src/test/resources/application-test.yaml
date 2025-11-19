@@ -1,0 +1,8 @@
+spring:
+  data:
+    redis:
+      repositories:
+        enabled: false
+  redisson:
+    enabled: false
+

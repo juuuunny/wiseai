@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.wiseai.assignment.modules.common.support.lock.DistributedLock;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CancelReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
@@ -28,6 +29,12 @@ public class ReservationCommandService
   private final ReservationQueryPort reservationQueryPort;
 
   @Override
+  @DistributedLock(
+      key =
+          "'lock:reservation:' + #meetingRoomId + ':' + T(java.time.format.DateTimeFormatter).ofPattern('yyyyMMddHHmm').format(#startTime)",
+      waitTime = 200L,
+      leaseTime = 3000L,
+      retry = 3)
   @Transactional
   public ReservationResponse createReservation(
       Long meetingRoomId,
