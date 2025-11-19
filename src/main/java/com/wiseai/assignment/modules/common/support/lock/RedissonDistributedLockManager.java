@@ -39,9 +39,15 @@ public class RedissonDistributedLockManager {
    */
   public <T> T execute(
       String key, long waitTime, long leaseTime, int retryCount, Supplier<T> action) {
-    log.info("분산 락 작업 시작 - key: {}", key);
+    log.debug(
+        "[분산락] 락 실행 시작 - key: {} waitTime: {}ms leaseTime: {}ms retryCount: {}",
+        key,
+        waitTime,
+        leaseTime,
+        retryCount);
     RLock lock = redissonClient.getLock(key);
-    log.debug("lock 객체 생성 완료 - key={} class={}", key, lock.getClass().getSimpleName());
+    log.trace(
+        "[분산락] Redisson 락 객체 생성 완료 - key: {} class: {}", key, lock.getClass().getSimpleName());
 
     return attemptLockAcquisition(key, lock, waitTime, leaseTime, retryCount, action);
   }
@@ -52,15 +58,31 @@ public class RedissonDistributedLockManager {
     int attempts = 0;
 
     while (attempts <= retryCount) {
+      log.debug(
+          "[분산락] 락 획득 시도 - key: {} attempt: {}/{} waitTime: {}ms leaseTime: {}ms",
+          key,
+          attempts + 1,
+          retryCount + 1,
+          waitTime,
+          leaseTime);
+
       boolean acquired = acquireLock(key, lock, waitTime, leaseTime);
 
       if (acquired) {
+        log.info("[분산락] 락 획득 성공 - key: {} attempt: {}/{}", key, attempts + 1, retryCount + 1);
         try {
           T result = action.get();
-          log.info("락 기반 작업 성공 - key: {}", key);
+          log.info("[분산락] 락 기반 작업 성공 완료 - key: {}", key);
           return result;
+        } catch (BusinessException | CommonException e) {
+          // 비즈니스/공통 예외는 그대로 전파 (로깅은 AOP에서 처리)
+          throw e;
         } catch (Exception e) {
-          log.error("락 기반 작업 실행 중 예외 발생 - key: {}", key, e);
+          log.error(
+              "[분산락] 락 기반 작업 실행 중 예외 발생 - key: {} exception: {}",
+              key,
+              e.getClass().getSimpleName(),
+              e);
           throw e;
         } finally {
           // 락을 실제로 획득한 경우에만 해제
@@ -71,12 +93,16 @@ public class RedissonDistributedLockManager {
       }
 
       attempts++;
-      log.warn("락 획득 실패 - key: {} attempt: {}/{}", key, attempts, retryCount);
-      performBackoff(attempts);
+      if (attempts <= retryCount) {
+        log.warn("[분산락] 락 획득 실패, 재시도 예정 - key: {} attempt: {}/{}", key, attempts, retryCount);
+        performBackoff(key, attempts);
+      }
     }
 
-    log.error("락 획득 최대 재시도 횟수 초과 - key: {}", key);
-    throw new LockAcquisitionException("다른 사용자가 해당 자원에 접근 중입니다. 잠시 후 다시 시도해주세요.");
+    log.error("[분산락] 락 획득 최대 재시도 횟수 초과 - key: {} totalAttempts: {}", key, attempts);
+    throw new LockAcquisitionException(
+        String.format(
+            "다른 사용자가 해당 자원에 접근 중입니다. (key: %s, 시도 횟수: %d) 잠시 후 다시 시도해주세요.", key, attempts));
   }
 
   /** 락 획득만 담당합니다. (락 해제는 하지 않음) 락 해제는 호출하는 메서드에서 finally 블록을 통해 처리됩니다. */
@@ -84,26 +110,60 @@ public class RedissonDistributedLockManager {
   private boolean acquireLock(String key, RLock lock, long waitTime, long leaseTime) {
     try {
       boolean acquired = lock.tryLock(waitTime, leaseTime, TimeUnit.MILLISECONDS);
-      log.debug("tryLock 결과 - key={} acquired={}", key, acquired);
+      log.trace(
+          "[분산락] tryLock 결과 - key: {} acquired: {} waitTime: {}ms leaseTime: {}ms",
+          key,
+          acquired,
+          waitTime,
+          leaseTime);
       return acquired;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      log.error("인터럽트 발생 - key: {}", key, e);
-      throw new LockAcquisitionException("스레드 인터럽트로 인해 락 획득 실패", e);
+      log.error(
+          "[분산락] 락 획득 중 스레드 인터럽트 발생 - key: {} waitTime: {}ms leaseTime: {}ms",
+          key,
+          waitTime,
+          leaseTime,
+          e);
+      throw new LockAcquisitionException(
+          String.format(
+              "스레드 인터럽트로 인해 락 획득 실패 (key: %s, waitTime: %dms, leaseTime: %dms)",
+              key, waitTime, leaseTime),
+          e);
     } catch (Exception e) {
-      log.error("락 획득 중 예외 발생 - key: {}", key, e);
-      throw new LockAcquisitionException("분산 락 획득 중 예외 발생", e);
+      log.error(
+          "[분산락] 락 획득 중 예외 발생 - key: {} waitTime: {}ms leaseTime: {}ms exception: {}",
+          key,
+          waitTime,
+          leaseTime,
+          e.getClass().getSimpleName(),
+          e);
+      throw new LockAcquisitionException(
+          String.format(
+              "분산 락 획득 중 예외 발생 (key: %s, exception: %s)", key, e.getClass().getSimpleName()),
+          e);
     }
   }
 
-  private void performBackoff(int attempts) {
+  private void performBackoff(String key, int attempts) {
     // 지수 백오프: 100ms, 200ms, 400ms, 800ms...
     long backoffMs = Math.min(100L * (1L << (attempts - 1)), 5000L); // 최대 5초
+    log.debug("[분산락] 백오프 대기 시작 - key: {} attempt: {} backoffMs: {}ms", key, attempts, backoffMs);
     try {
       TimeUnit.MILLISECONDS.sleep(backoffMs);
+      log.trace("[분산락] 백오프 대기 완료 - key: {} attempt: {} backoffMs: {}ms", key, attempts, backoffMs);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new LockAcquisitionException("백오프 대기 중 인터럽트 발생", e);
+      log.error(
+          "[분산락] 백오프 대기 중 스레드 인터럽트 발생 - key: {} attempt: {} backoffMs: {}ms",
+          key,
+          attempts,
+          backoffMs,
+          e);
+      throw new LockAcquisitionException(
+          String.format(
+              "백오프 대기 중 인터럽트 발생 (key: %s, attempt: %d, backoffMs: %dms)", key, attempts, backoffMs),
+          e);
     }
   }
 
@@ -133,10 +193,17 @@ public class RedissonDistributedLockManager {
     try {
       if (lock.isHeldByCurrentThread()) {
         lock.unlock();
-        log.debug("락 해제 완료 - key: {}", key);
+        log.debug("[분산락] 락 해제 완료 - key: {}", key);
+      } else {
+        log.warn("[분산락] 락 해제 시도 실패 (현재 스레드가 락을 보유하지 않음) - key: {}", key);
       }
+    } catch (IllegalMonitorStateException e) {
+      log.warn("[분산락] 락 해제 실패 (잘못된 모니터 상태) - key: {} message: {}", key, e.getMessage());
+      // IllegalMonitorStateException은 이미 해제된 락을 다시 해제하려고 할 때 발생
+      // 이는 치명적이지 않으므로 로그만 남기고 계속 진행
     } catch (Exception e) {
-      log.error("락 해제 실패 - key: {}", key, e);
+      log.error("[분산락] 락 해제 중 예외 발생 - key: {} exception: {}", key, e.getClass().getSimpleName(), e);
+      // 락 해제 실패는 치명적이지 않지만 로그는 남겨야 함
     }
   }
 }

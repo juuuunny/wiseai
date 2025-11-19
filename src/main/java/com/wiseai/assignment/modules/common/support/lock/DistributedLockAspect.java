@@ -46,9 +46,18 @@ public class DistributedLockAspect {
   public Object around(ProceedingJoinPoint joinPoint, DistributedLock lock) {
     MethodSignature signature = (MethodSignature) joinPoint.getSignature();
     Method method = signature.getMethod();
+    String className = joinPoint.getTarget().getClass().getSimpleName();
+    String methodName = method.getName();
     String key = generateLockKey(method, joinPoint.getArgs(), lock);
 
-    log.info("[AOP] 분산 락 진입 - method: {} key: {}", method.getName(), key);
+    log.debug(
+        "[분산락] 락 진입 - class: {} method: {} key: {} waitTime: {}ms leaseTime: {}ms retry: {}",
+        className,
+        methodName,
+        key,
+        lock.waitTime(),
+        lock.leaseTime(),
+        lock.retry());
 
     try {
       return lockManager.execute(
@@ -57,26 +66,69 @@ public class DistributedLockAspect {
           lock.leaseTime(),
           lock.retry(),
           () -> {
-            log.info("[AOP] 분산 락 내부 실행 - method: {} key: {}", method.getName(), key);
+            log.debug(
+                "[분산락] 락 획득 성공, 원본 메서드 실행 시작 - class: {} method: {} key: {}",
+                className,
+                methodName,
+                key);
             try {
-              return proceedSafely(joinPoint);
+              Object result = proceedSafely(joinPoint);
+              log.debug(
+                  "[분산락] 원본 메서드 실행 완료 - class: {} method: {} key: {}", className, methodName, key);
+              return result;
             } catch (BusinessException | CommonException e) {
               // 비즈니스/공통 예외는 그대로 전파
+              log.warn(
+                  "[분산락] 원본 메서드에서 예외 발생 (전파) - class: {} method: {} key: {} errorCode: {}",
+                  className,
+                  methodName,
+                  key,
+                  e.getErrorCode().getCode(),
+                  e);
               throw e;
             } catch (Throwable e) {
               // 기타 예외는 래핑하여 전파
-              log.error("[AOP] 원본 메서드 실행 중 예외 - key: {}", key, e);
+              log.error(
+                  "[분산락] 원본 메서드 실행 중 예상치 못한 예외 발생 - class: {} method: {} key: {}",
+                  className,
+                  methodName,
+                  key,
+                  e);
               throw new CommonException(CommonErrorStatus.DISTRIBUTED_LOCK_EXECUTION_FAILURE);
             }
           });
+    } catch (LockAcquisitionException e) {
+      log.warn(
+          "[분산락] 락 획득 실패 - class: {} method: {} key: {} message: {}",
+          className,
+          methodName,
+          key,
+          e.getMessage());
+      throw e;
     } catch (BusinessException e) {
-      log.warn("[AOP] 비즈니스 예외 - key: {} message: {}", key, e.getMessage());
+      log.warn(
+          "[분산락] 비즈니스 예외 전파 - class: {} method: {} key: {} errorCode: {}",
+          className,
+          methodName,
+          key,
+          e.getErrorCode().getCode());
       throw e;
     } catch (CommonException e) {
-      log.error("[AOP] 공통 예외 - key: {} message: {}", key, e.getMessage());
+      log.error(
+          "[분산락] 공통 예외 전파 - class: {} method: {} key: {} errorCode: {}",
+          className,
+          methodName,
+          key,
+          e.getErrorCode().getCode(),
+          e);
       throw e;
     } catch (Throwable e) {
-      log.error("[AOP] 락 내부 로직 예외 - key: {}", key, e);
+      log.error(
+          "[분산락] 락 처리 중 예상치 못한 예외 발생 - class: {} method: {} key: {}",
+          className,
+          methodName,
+          key,
+          e);
       throw new CommonException(CommonErrorStatus.DISTRIBUTED_LOCK_EXECUTION_FAILURE);
     }
   }
@@ -114,12 +166,21 @@ public class DistributedLockAspect {
     try {
       String key = parser.parseExpression(lock.key()).getValue(context, String.class);
       if (key == null || key.isBlank()) {
-        throw new LockAcquisitionException("SpEL로 생성된 락 키가 null 또는 빈 문자열입니다.");
+        log.error(
+            "[분산락] SpEL로 생성된 락 키가 유효하지 않음 - method: {} expression: {} result: {}",
+            method.getName(),
+            lock.key(),
+            key);
+        throw new LockAcquisitionException(
+            "SpEL로 생성된 락 키가 null 또는 빈 문자열입니다. expression: " + lock.key());
       }
+      log.trace(
+          "[분산락] 락 키 생성 완료 - method: {} expression: {} key: {}", method.getName(), lock.key(), key);
       return key;
     } catch (SpelEvaluationException e) {
-      log.error("[AOP] SpEL 키 파싱 오류 - expression: {}", lock.key(), e);
-      throw new LockAcquisitionException("분산 락 키 SpEL 파싱 실패: " + lock.key(), e);
+      log.error("[분산락] SpEL 키 파싱 실패 - method: {} expression: {}", method.getName(), lock.key(), e);
+      throw new LockAcquisitionException(
+          "분산 락 키 SpEL 파싱 실패: " + lock.key() + " (method: " + method.getName() + ")", e);
     }
   }
 }
