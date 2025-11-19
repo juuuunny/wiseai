@@ -14,6 +14,7 @@ import org.springframework.kafka.support.ExponentialBackOffWithMaxRetries;
 @Configuration
 @EnableKafka
 @EnableConfigurationProperties(PaymentKafkaTopicsProperties.class)
+@org.springframework.context.annotation.Profile("!test")
 public class PaymentKafkaConfig {
 
   @Bean

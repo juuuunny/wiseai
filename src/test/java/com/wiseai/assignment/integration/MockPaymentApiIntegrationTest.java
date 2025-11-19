@@ -15,21 +15,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.wiseai.assignment.integration.config.IntegrationTestConfig;
 import com.wiseai.assignment.modules.meetingroom.application.port.out.command.MeetingRoomCommandPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
-import com.wiseai.assignment.modules.payment.adapter.kafka.listener.PaymentCancelListener;
-import com.wiseai.assignment.modules.payment.adapter.kafka.listener.PaymentProcessListener;
-import com.wiseai.assignment.modules.payment.adapter.kafka.relay.PaymentOutboxRelay;
+import com.wiseai.assignment.modules.payment.adapter.gateway.impl.KakaoPaymentGateway;
+import com.wiseai.assignment.modules.payment.adapter.gateway.impl.TossPaymentGateway;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
-import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
-import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
-import com.wiseai.assignment.modules.payment.application.service.event.PaymentDlqProducer;
-import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
@@ -38,6 +35,7 @@ import com.wiseai.assignment.modules.reservation.application.port.in.command.Pro
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(IntegrationTestConfig.class)
 @Transactional
 @DisplayName("Mock 결제 API 통합 테스트")
 class MockPaymentApiIntegrationTest {
@@ -48,14 +46,9 @@ class MockPaymentApiIntegrationTest {
   @Autowired private CompletePaymentUseCase completePaymentUseCase;
   @Autowired private MeetingRoomCommandPort meetingRoomCommandPort;
 
-  @MockBean private PaymentGateway paymentGateway;
+  @MockBean private TossPaymentGateway tossPaymentGateway;
+  @MockBean private KakaoPaymentGateway kakaoPaymentGateway;
   @MockBean private org.redisson.api.RedissonClient redissonClient;
-  @MockBean private PaymentEventProducer paymentEventProducer;
-  @MockBean private PaymentCancelEventProducer paymentCancelEventProducer;
-  @MockBean private PaymentDlqProducer paymentDlqProducer;
-  @MockBean private PaymentOutboxRelay paymentOutboxRelay;
-  @MockBean private PaymentProcessListener paymentProcessListener;
-  @MockBean private PaymentCancelListener paymentCancelListener;
 
   private Long meetingRoomId;
   private Long userId;
@@ -84,9 +77,9 @@ class MockPaymentApiIntegrationTest {
 
     // given: Mock 결제 게이트웨이 설정
     String mockTransactionId = "txn_mock_12345";
-    given(paymentGateway.processPayment(eq(totalAmount), eq(reservation.id())))
+    given(tossPaymentGateway.processPayment(eq(totalAmount), eq(reservation.id())))
         .willReturn(CompletableFuture.completedFuture(mockTransactionId));
-    given(paymentGateway.getSupportedPaymentMethod()).willReturn(PaymentMethod.TOSS);
+    given(tossPaymentGateway.getSupportedPaymentMethod()).willReturn(PaymentMethod.TOSS);
 
     // when: 결제 생성
     PaymentResponse paymentResponse =
@@ -108,7 +101,7 @@ class MockPaymentApiIntegrationTest {
 
     // given: Mock 결제 게이트웨이 성공 응답
     String mockTransactionId = "txn_success_12345";
-    given(paymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
+    given(tossPaymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
         .willReturn(CompletableFuture.completedFuture(mockTransactionId));
 
     // when: 결제 완료
@@ -128,7 +121,7 @@ class MockPaymentApiIntegrationTest {
         createPaymentUseCase.createPayment(1L, PaymentMethod.TOSS, totalAmount);
 
     // given: Mock 결제 게이트웨이 실패 응답 (예외 발생)
-    given(paymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
+    given(tossPaymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
         .willReturn(CompletableFuture.failedFuture(new RuntimeException("결제 게이트웨이 오류")));
 
     // when & then: 결제 완료 시도 시 예외가 발생하지 않음 (비동기 처리이므로)
