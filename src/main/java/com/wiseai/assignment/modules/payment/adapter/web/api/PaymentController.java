@@ -10,9 +10,11 @@ import com.wiseai.assignment.modules.common.dto.response.SuccessResponse;
 import com.wiseai.assignment.modules.payment.application.dto.request.CompletePaymentRequest;
 import com.wiseai.assignment.modules.payment.application.dto.request.CreatePaymentRequest;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CancelPaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
+import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentsUseCase;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentSuccessStatus;
@@ -30,6 +32,7 @@ public class PaymentController implements PaymentApi {
   private final CancelPaymentUseCase cancelPaymentUseCase;
   private final GetPaymentUseCase getPaymentUseCase;
   private final GetPaymentsUseCase getPaymentsUseCase;
+  private final GetPaymentStatusUseCase getPaymentStatusUseCase;
 
   @Override
   public ResponseEntity<SuccessResponse<PaymentResponse>> createPayment(
@@ -82,5 +85,14 @@ public class PaymentController implements PaymentApi {
     List<PaymentResponse> response = getPaymentsUseCase.getPaymentsByReservationId(reservationId);
     log.debug("예약별 결제 목록 조회 완료: reservationId={}, count={}", reservationId, response.size());
     return ResponseEntity.ok(SuccessResponse.of(PaymentSuccessStatus.OK_GET_PAYMENTS, response));
+  }
+
+  @Override
+  public ResponseEntity<SuccessResponse<PaymentStatusResponse>> getPaymentStatus(Long paymentId) {
+    log.debug("결제 상태 조회 API 요청: paymentId={}", paymentId);
+    PaymentStatusResponse response = getPaymentStatusUseCase.getPaymentStatus(paymentId);
+    log.debug("결제 상태 조회 완료: paymentId={}, status={}", paymentId, response.status());
+    return ResponseEntity.ok(
+        SuccessResponse.of(PaymentSuccessStatus.OK_GET_PAYMENT_STATUS, response));
   }
 }

@@ -29,9 +29,11 @@ import com.wiseai.assignment.modules.common.exception.GlobalExceptionHandler;
 import com.wiseai.assignment.modules.payment.application.dto.request.CompletePaymentRequest;
 import com.wiseai.assignment.modules.payment.application.dto.request.CreatePaymentRequest;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CancelPaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
+import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentsUseCase;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
@@ -65,6 +67,7 @@ class PaymentControllerTest {
   @MockBean private CancelPaymentUseCase cancelPaymentUseCase;
   @MockBean private GetPaymentUseCase getPaymentUseCase;
   @MockBean private GetPaymentsUseCase getPaymentsUseCase;
+  @MockBean private GetPaymentStatusUseCase getPaymentStatusUseCase;
 
   private static final Long DEFAULT_RESERVATION_ID = 1L;
   private static final Long DEFAULT_PAYMENT_ID = 1L;
@@ -273,5 +276,73 @@ class PaymentControllerTest {
         .andExpect(jsonPath("$.code").value("PAYMENT-005"))
         .andExpect(jsonPath("$.data").isArray())
         .andExpect(jsonPath("$.data[0].id").value(DEFAULT_PAYMENT_ID));
+  }
+
+  @Test
+  @DisplayName("결제 상태 조회 성공")
+  void getPaymentStatus_success() throws Exception {
+    // given
+    PaymentStatusResponse response =
+        new PaymentStatusResponse(
+            DEFAULT_PAYMENT_ID, PaymentStatus.COMPLETED, DEFAULT_TRANSACTION_ID);
+
+    given(getPaymentStatusUseCase.getPaymentStatus(DEFAULT_PAYMENT_ID)).willReturn(response);
+
+    // when & then
+    mockMvc
+        .perform(get("/payments/{paymentId}/status", DEFAULT_PAYMENT_ID))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.httpStatus").value(200))
+        .andExpect(jsonPath("$.code").value("PAYMENT-006"))
+        .andExpect(jsonPath("$.message").value("결제 상태 조회에 성공했습니다."))
+        .andExpect(jsonPath("$.data.paymentId").value(DEFAULT_PAYMENT_ID))
+        .andExpect(jsonPath("$.data.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.data.transactionId").value(DEFAULT_TRANSACTION_ID));
+  }
+
+  @Test
+  @DisplayName("결제 상태 조회 실패 - 존재하지 않는 결제")
+  void getPaymentStatus_notFound() throws Exception {
+    // given
+    given(getPaymentStatusUseCase.getPaymentStatus(PAYMENT_ID_NOT_FOUND))
+        .willThrow(new PaymentException(PaymentErrorStatus.NOT_FOUND));
+
+    // when & then
+    mockMvc
+        .perform(get("/payments/{paymentId}/status", PAYMENT_ID_NOT_FOUND))
+        .andDo(print())
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.httpStatus").value(404))
+        .andExpect(jsonPath("$.code").value("PAYMENT-004"))
+        .andExpect(jsonPath("$.message").value("결제를 찾을 수 없습니다."));
+  }
+
+  @Test
+  @DisplayName("결제 상태 조회 실패 - 잘못된 ID (0)")
+  void getPaymentStatus_invalidId_zero() throws Exception {
+    // when & then
+    mockMvc
+        .perform(get("/payments/{paymentId}/status", 0))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("결제 상태 조회 - PENDING 상태")
+  void getPaymentStatus_pending() throws Exception {
+    // given
+    PaymentStatusResponse response =
+        new PaymentStatusResponse(DEFAULT_PAYMENT_ID, PaymentStatus.PENDING, null);
+
+    given(getPaymentStatusUseCase.getPaymentStatus(DEFAULT_PAYMENT_ID)).willReturn(response);
+
+    // when & then
+    mockMvc
+        .perform(get("/payments/{paymentId}/status", DEFAULT_PAYMENT_ID))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.status").value("PENDING"))
+        .andExpect(jsonPath("$.data.transactionId").isEmpty());
   }
 }
