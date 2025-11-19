@@ -66,4 +66,15 @@ public interface PaymentApi {
   @GetMapping("/payments/reservations/{reservationId}")
   ResponseEntity<SuccessResponse<List<PaymentResponse>>> getPaymentsByReservationId(
       @PathVariable @Min(1) Long reservationId);
+
+  @Operation(summary = "결제 상태 조회", description = "결제 ID로 결제 상태를 조회합니다.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "조회 성공"),
+    @ApiResponse(responseCode = "404", description = "결제를 찾을 수 없음")
+  })
+  @GetMapping("/payments/{paymentId}/status")
+  ResponseEntity<
+          SuccessResponse<
+              com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse>>
+      getPaymentStatus(@PathVariable("paymentId") @Min(1) Long paymentId);
 }
