@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,15 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.wiseai.assignment.modules.meetingroom.application.port.out.command.MeetingRoomCommandPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
-import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
-import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -54,8 +53,7 @@ class MockPaymentApiIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    MeetingRoom meetingRoom =
-        MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "테스트용 회의실");
+    MeetingRoom meetingRoom = MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "테스트용 회의실");
     meetingRoomId = meetingRoomCommandPort.save(meetingRoom).getId();
 
     userId = 1L;
@@ -119,12 +117,10 @@ class MockPaymentApiIntegrationTest {
 
     // given: Mock 결제 게이트웨이 실패 응답 (예외 발생)
     given(paymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
-        .willReturn(
-            CompletableFuture.failedFuture(new RuntimeException("결제 게이트웨이 오류")));
+        .willReturn(CompletableFuture.failedFuture(new RuntimeException("결제 게이트웨이 오류")));
 
     // when & then: 결제 완료 시도 시 예외가 발생하지 않음 (비동기 처리이므로)
     // 실제 결제 게이트웨이 호출은 비동기로 처리되므로, 여기서는 결제 생성만 확인
     assertThat(payment.status()).isEqualTo(PaymentStatus.PENDING);
   }
 }
-
