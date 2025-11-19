@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,8 @@ import com.wiseai.assignment.modules.reservation.domain.exception.ReservationExc
 import com.wiseai.assignment.modules.reservation.domain.status.ReservationErrorStatus;
 import com.wiseai.assignment.modules.security.config.SecurityConfig;
 import com.wiseai.assignment.modules.security.filter.JwtFilter;
+import com.wiseai.assignment.modules.security.handler.SecurityContextProvider;
+import com.wiseai.assignment.modules.user.domain.enums.RoleType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,6 +86,16 @@ class ReservationControllerTest {
   private static final LocalDateTime DEFAULT_END_TIME =
       LocalDateTime.of(TEST_YEAR, TEST_MONTH, TEST_DAY, 11, 0);
   private static final BigDecimal DEFAULT_TOTAL_AMOUNT = new BigDecimal("10000");
+
+  @BeforeEach
+  void setUp() {
+    SecurityContextProvider.setupSecurityContextForTest(DEFAULT_USER_ID, RoleType.ROLE_USER);
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextProvider.clearSecurityContext();
+  }
 
   @Test
   @DisplayName("예약 생성 성공")
@@ -229,6 +243,21 @@ class ReservationControllerTest {
   }
 
   @Test
+  @DisplayName("사용자별 예약 목록 조회 실패 - 권한 없음")
+  void getReservationsByUserId_fail_unauthorized() throws Exception {
+    // given
+    Long otherUserId = 999L;
+
+    // when & then
+    mockMvc
+        .perform(get("/reservations/users/{userId}", otherUserId))
+        .andDo(print())
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.httpStatus").value(403))
+        .andExpect(jsonPath("$.code").value("RESERVATION-009"));
+  }
+
+  @Test
   @DisplayName("예약 취소 성공")
   void cancelReservation_success() throws Exception {
     // given
@@ -258,16 +287,14 @@ class ReservationControllerTest {
   }
 
   @Test
-  @DisplayName("예약 취소 실패 - 권한 없음")
+  @DisplayName("예약 취소 실패 - 권한 없음 (다른 사용자)")
   void cancelReservation_fail_unauthorized() throws Exception {
     // given
-    given(cancelReservationUseCase.cancelReservation(DEFAULT_RESERVATION_ID, DEFAULT_USER_ID))
-        .willThrow(new ReservationException(ReservationErrorStatus.UNAUTHORIZED));
+    Long otherUserId = 999L;
 
     // when & then
     mockMvc
-        .perform(
-            delete("/reservations/{id}/users/{userId}", DEFAULT_RESERVATION_ID, DEFAULT_USER_ID))
+        .perform(delete("/reservations/{id}/users/{userId}", DEFAULT_RESERVATION_ID, otherUserId))
         .andDo(print())
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.httpStatus").value(403))
