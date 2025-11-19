@@ -5,4 +5,3 @@ import com.wiseai.assignment.modules.payment.domain.model.Payment;
 public interface PaymentCommandPort {
   Payment update(Payment payment);
 }
-

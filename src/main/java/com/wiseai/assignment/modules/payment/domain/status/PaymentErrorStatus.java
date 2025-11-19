@@ -1,9 +1,11 @@
 package com.wiseai.assignment.modules.payment.domain.status;
 
+import org.springframework.http.HttpStatus;
+
 import com.wiseai.assignment.modules.common.status.BaseErrorCode;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
@@ -19,4 +21,3 @@ public enum PaymentErrorStatus implements BaseErrorCode {
   private final String code;
   private final String message;
 }
-

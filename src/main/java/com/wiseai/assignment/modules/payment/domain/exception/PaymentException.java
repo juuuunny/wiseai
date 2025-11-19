@@ -8,4 +8,3 @@ public class PaymentException extends BusinessException {
     super(errorStatus);
   }
 }
-

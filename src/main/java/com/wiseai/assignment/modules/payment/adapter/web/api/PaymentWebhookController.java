@@ -64,4 +64,3 @@ public class PaymentWebhookController implements PaymentWebhookApi {
         .body(SuccessResponse.of(CommonSuccessStatus.OK, null));
   }
 }
-

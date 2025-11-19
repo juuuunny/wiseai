@@ -22,4 +22,3 @@ public interface HandlePaymentWebhookUseCase {
       String failureCode,
       String failureMessage);
 }
-

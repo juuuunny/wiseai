@@ -1,10 +1,12 @@
 package com.wiseai.assignment.modules.payment.domain.model;
 
+import java.math.BigDecimal;
+
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
-import java.math.BigDecimal;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -67,4 +69,3 @@ public class Payment {
         .build();
   }
 }
-

@@ -1,8 +1,9 @@
 package com.wiseai.assignment.modules.payment.adapter.web.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
 
 public record KakaoWebhookRequest(
     @NotBlank(message = "결제 키는 필수입니다.") String paymentKey,
@@ -12,4 +13,3 @@ public record KakaoWebhookRequest(
     String transactionId,
     String failureCode,
     String failureMessage) {}
-

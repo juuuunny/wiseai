@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.wiseai.assignment.modules.payment.application.port.in.webhook.HandlePaymentWebhookUseCase;
-import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
+import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
@@ -34,11 +34,7 @@ public class PaymentWebhookService implements HandlePaymentWebhookUseCase {
       String transactionId,
       String failureCode,
       String failureMessage) {
-    log.debug(
-        "TOSS 웹훅 처리 시작: paymentKey={}, orderId={}, status={}",
-        paymentKey,
-        orderId,
-        status);
+    log.debug("TOSS 웹훅 처리 시작: paymentKey={}, orderId={}, status={}", paymentKey, orderId, status);
 
     // orderId에서 paymentId 추출 (예: "payment-123" 형식 가정)
     Long paymentId = extractPaymentIdFromOrderId(orderId);
@@ -88,11 +84,7 @@ public class PaymentWebhookService implements HandlePaymentWebhookUseCase {
       String transactionId,
       String failureCode,
       String failureMessage) {
-    log.debug(
-        "KAKAO 웹훅 처리 시작: paymentKey={}, orderId={}, status={}",
-        paymentKey,
-        orderId,
-        status);
+    log.debug("KAKAO 웹훅 처리 시작: paymentKey={}, orderId={}, status={}", paymentKey, orderId, status);
 
     // orderId에서 paymentId 추출
     Long paymentId = extractPaymentIdFromOrderId(orderId);
@@ -165,4 +157,3 @@ public class PaymentWebhookService implements HandlePaymentWebhookUseCase {
     }
   }
 }
-

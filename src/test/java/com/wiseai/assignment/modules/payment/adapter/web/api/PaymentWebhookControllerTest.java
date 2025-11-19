@@ -7,16 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wiseai.assignment.modules.common.exception.GlobalExceptionHandler;
-import com.wiseai.assignment.modules.payment.adapter.web.request.KakaoWebhookRequest;
-import com.wiseai.assignment.modules.payment.adapter.web.request.TossWebhookRequest;
-import com.wiseai.assignment.modules.payment.application.port.in.webhook.HandlePaymentWebhookUseCase;
-import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
-import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
-import com.wiseai.assignment.modules.security.config.SecurityConfig;
-import com.wiseai.assignment.modules.security.filter.JwtFilter;
 import java.math.BigDecimal;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +22,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.wiseai.assignment.modules.common.exception.GlobalExceptionHandler;
+import com.wiseai.assignment.modules.payment.adapter.web.request.KakaoWebhookRequest;
+import com.wiseai.assignment.modules.payment.adapter.web.request.TossWebhookRequest;
+import com.wiseai.assignment.modules.payment.application.port.in.webhook.HandlePaymentWebhookUseCase;
+import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
+import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
+import com.wiseai.assignment.modules.security.config.SecurityConfig;
+import com.wiseai.assignment.modules.security.filter.JwtFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(
     controllers = PaymentWebhookController.class,
@@ -68,13 +71,7 @@ class PaymentWebhookControllerTest {
     doNothing()
         .when(handlePaymentWebhookUseCase)
         .handleTossWebhook(
-            PAYMENT_KEY,
-            ORDER_ID,
-            STATUS_DONE,
-            TOTAL_AMOUNT,
-            TRANSACTION_ID,
-            null,
-            null);
+            PAYMENT_KEY, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -100,13 +97,7 @@ class PaymentWebhookControllerTest {
     doThrow(new PaymentException(PaymentErrorStatus.NOT_FOUND))
         .when(handlePaymentWebhookUseCase)
         .handleTossWebhook(
-            PAYMENT_KEY,
-            ORDER_ID,
-            STATUS_DONE,
-            TOTAL_AMOUNT,
-            TRANSACTION_ID,
-            null,
-            null);
+            PAYMENT_KEY, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -126,7 +117,8 @@ class PaymentWebhookControllerTest {
   void handleTossWebhook_validationFailed_missingPaymentKey() throws Exception {
     // given
     TossWebhookRequest request =
-        new TossWebhookRequest(null, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
+        new TossWebhookRequest(
+            null, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -149,13 +141,7 @@ class PaymentWebhookControllerTest {
     doNothing()
         .when(handlePaymentWebhookUseCase)
         .handleKakaoWebhook(
-            PAYMENT_KEY,
-            ORDER_ID,
-            STATUS_DONE,
-            TOTAL_AMOUNT,
-            TRANSACTION_ID,
-            null,
-            null);
+            PAYMENT_KEY, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -181,13 +167,7 @@ class PaymentWebhookControllerTest {
     doThrow(new PaymentException(PaymentErrorStatus.NOT_FOUND))
         .when(handlePaymentWebhookUseCase)
         .handleKakaoWebhook(
-            PAYMENT_KEY,
-            ORDER_ID,
-            STATUS_DONE,
-            TOTAL_AMOUNT,
-            TRANSACTION_ID,
-            null,
-            null);
+            PAYMENT_KEY, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -207,7 +187,8 @@ class PaymentWebhookControllerTest {
   void handleKakaoWebhook_validationFailed_missingOrderId() throws Exception {
     // given
     KakaoWebhookRequest request =
-        new KakaoWebhookRequest(PAYMENT_KEY, null, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
+        new KakaoWebhookRequest(
+            PAYMENT_KEY, null, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
 
     // when & then
     mockMvc
@@ -219,4 +200,3 @@ class PaymentWebhookControllerTest {
         .andExpect(status().isBadRequest());
   }
 }
-

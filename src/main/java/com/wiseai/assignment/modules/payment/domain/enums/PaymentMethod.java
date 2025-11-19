@@ -4,4 +4,3 @@ public enum PaymentMethod {
   TOSS,
   KAKAO
 }
-
