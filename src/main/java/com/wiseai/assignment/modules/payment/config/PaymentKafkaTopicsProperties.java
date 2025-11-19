@@ -1,8 +1,9 @@
 package com.wiseai.assignment.modules.payment.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
@@ -21,4 +22,3 @@ public class PaymentKafkaTopicsProperties {
   /** 결제 취소 DLQ 토픽. */
   private String cancelDlq = "payment.cancel.dlq";
 }
-

@@ -1,5 +1,9 @@
 package com.wiseai.assignment.modules.payment.adapter.kafka.listener;
 
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.wiseai.assignment.modules.payment.application.event.PaymentCancelRequestMessage;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
@@ -9,11 +13,9 @@ import com.wiseai.assignment.modules.payment.application.service.infrastructure.
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -25,7 +27,9 @@ public class PaymentCancelListener {
   private final PaymentGatewayFactory paymentGatewayFactory;
   private final PaymentCancelLogService paymentCancelLogService;
 
-  @KafkaListener(topics = "${payment.kafka.topics.cancel}", groupId = "${spring.kafka.consumer.group-id}")
+  @KafkaListener(
+      topics = "${payment.kafka.topics.cancel}",
+      groupId = "${spring.kafka.consumer.group-id}")
   @Transactional
   public void handleCancellation(PaymentCancelRequestMessage message) {
     log.info(
@@ -41,9 +45,7 @@ public class PaymentCancelListener {
 
     if (paymentCancelLogService.isProcessed(message.eventId())) {
       log.debug(
-          "이미 처리된 결제 취소 이벤트 무시: eventId={}, paymentId={}",
-          message.eventId(),
-          message.paymentId());
+          "이미 처리된 결제 취소 이벤트 무시: eventId={}, paymentId={}", message.eventId(), message.paymentId());
       return;
     }
 
@@ -79,4 +81,3 @@ public class PaymentCancelListener {
     }
   }
 }
-

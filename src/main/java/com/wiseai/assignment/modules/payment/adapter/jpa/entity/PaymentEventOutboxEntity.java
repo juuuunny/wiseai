@@ -1,6 +1,7 @@
 package com.wiseai.assignment.modules.payment.adapter.jpa.entity;
 
 import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,8 +40,7 @@ public class PaymentEventOutboxEntity extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private OutboxStatus status;
 
-  @Column
-  private Integer retryCount;
+  @Column private Integer retryCount;
 
   public PaymentEventOutboxEntity(
       String eventId, EventType eventType, String topic, String payload) {
@@ -75,4 +75,3 @@ public class PaymentEventOutboxEntity extends BaseTimeEntity {
     FAILED
   }
 }
-

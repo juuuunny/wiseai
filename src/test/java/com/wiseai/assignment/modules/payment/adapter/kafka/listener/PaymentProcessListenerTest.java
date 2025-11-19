@@ -7,6 +7,19 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
@@ -18,17 +31,6 @@ import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentProcessListener 테스트")
@@ -179,4 +181,3 @@ class PaymentProcessListenerTest {
     verify(paymentCommandPort, never()).update(any());
   }
 }
-

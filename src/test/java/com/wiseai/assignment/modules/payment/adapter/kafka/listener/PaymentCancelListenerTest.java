@@ -7,6 +7,19 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.wiseai.assignment.modules.payment.application.event.PaymentCancelRequestMessage;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
@@ -18,17 +31,6 @@ import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentCancelListener 테스트")
@@ -65,7 +67,9 @@ class PaymentCancelListenerTest {
 
     given(paymentCancelLogService.isProcessed(DEFAULT_EVENT_ID)).willReturn(false);
     given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(payment));
-    given(paymentCancelLogService.tryAcquire(DEFAULT_EVENT_ID, DEFAULT_PAYMENT_ID, PaymentMethod.TOSS))
+    given(
+            paymentCancelLogService.tryAcquire(
+                DEFAULT_EVENT_ID, DEFAULT_PAYMENT_ID, PaymentMethod.TOSS))
         .willReturn(true);
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.cancelPayment(DEFAULT_TRANSACTION_ID))
@@ -76,7 +80,8 @@ class PaymentCancelListenerTest {
     ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
     verify(paymentCommandPort).update(captor.capture());
     assertThat(captor.getValue().getStatus()).isEqualTo(PaymentStatus.CANCELLED);
-    verify(paymentCancelLogService).markProcessed(DEFAULT_EVENT_ID, DEFAULT_PAYMENT_ID, PaymentMethod.TOSS);
+    verify(paymentCancelLogService)
+        .markProcessed(DEFAULT_EVENT_ID, DEFAULT_PAYMENT_ID, PaymentMethod.TOSS);
   }
 
   @Test
@@ -139,4 +144,3 @@ class PaymentCancelListenerTest {
     verify(paymentCommandPort, never()).update(any());
   }
 }
-

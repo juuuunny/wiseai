@@ -1,13 +1,16 @@
 package com.wiseai.assignment.modules.payment.adapter.jpa.repository;
 
-import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
-import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity.OutboxStatus;
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
+import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity.OutboxStatus;
+
 import jakarta.persistence.LockModeType;
 
 @Repository
@@ -22,4 +25,3 @@ public interface PaymentEventOutboxJpaRepository
   List<PaymentEventOutboxEntity> findPendingEvents(
       @Param("status") OutboxStatus status, @Param("maxRetries") int maxRetries);
 }
-

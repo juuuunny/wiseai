@@ -1,5 +1,9 @@
 package com.wiseai.assignment.modules.payment.adapter.kafka.listener;
 
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
@@ -9,11 +13,9 @@ import com.wiseai.assignment.modules.payment.application.service.infrastructure.
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -25,7 +27,9 @@ public class PaymentProcessListener {
   private final PaymentGatewayFactory paymentGatewayFactory;
   private final PaymentProcessLogService paymentProcessLogService;
 
-  @KafkaListener(topics = "${payment.kafka.topics.process}", groupId = "${spring.kafka.consumer.group-id}")
+  @KafkaListener(
+      topics = "${payment.kafka.topics.process}",
+      groupId = "${spring.kafka.consumer.group-id}")
   @Transactional
   public void handleMessage(PaymentProcessMessage message) {
     log.info(
@@ -41,9 +45,7 @@ public class PaymentProcessListener {
 
     if (paymentProcessLogService.isProcessed(message.eventId())) {
       log.debug(
-          "이미 처리된 결제 이벤트 무시: eventId={}, paymentId={}",
-          message.eventId(),
-          message.paymentId());
+          "이미 처리된 결제 이벤트 무시: eventId={}, paymentId={}", message.eventId(), message.paymentId());
       return;
     }
 
@@ -58,10 +60,7 @@ public class PaymentProcessListener {
       Payment completed = payment.complete(transactionId);
       paymentCommandPort.update(completed);
       paymentProcessLogService.markProcessed(message.eventId(), message.paymentId());
-      log.info(
-          "결제 처리 성공: paymentId={}, transactionId={}",
-          message.paymentId(),
-          transactionId);
+      log.info("결제 처리 성공: paymentId={}, transactionId={}", message.paymentId(), transactionId);
     } catch (Exception e) {
       log.error(
           "결제 처리 중 오류 발생: eventId={}, paymentId={}, error={}",
@@ -75,4 +74,3 @@ public class PaymentProcessListener {
     }
   }
 }
-

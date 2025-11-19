@@ -8,15 +8,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
-import com.wiseai.assignment.modules.payment.adapter.jpa.repository.PaymentEventOutboxJpaRepository;
-import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +21,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+
+import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
+import com.wiseai.assignment.modules.payment.adapter.jpa.repository.PaymentEventOutboxJpaRepository;
+import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PaymentOutboxRelay 테스트")
@@ -45,9 +48,7 @@ class PaymentOutboxRelayTest {
   @DisplayName("PENDING 이벤트가 없으면 릴레이하지 않는다")
   void relayPendingEvents_noPendingEvents() {
     // given
-    given(
-            outboxRepository.findPendingEvents(
-                PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
+    given(outboxRepository.findPendingEvents(PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
         .willReturn(List.of());
 
     // when
@@ -78,12 +79,9 @@ class PaymentOutboxRelayTest {
             new BigDecimal("10000"),
             Instant.now());
 
-    given(
-            outboxRepository.findPendingEvents(
-                PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
+    given(outboxRepository.findPendingEvents(PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
         .willReturn(List.of(outbox));
-    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class))
-        .willReturn(message);
+    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class)).willReturn(message);
     given(kafkaTemplate.send(eq(DEFAULT_TOPIC), eq(DEFAULT_PAYMENT_ID.toString()), any()))
         .willReturn(CompletableFuture.completedFuture(null));
 
@@ -96,7 +94,8 @@ class PaymentOutboxRelayTest {
     verify(outboxRepository).save(captor.capture());
     assertThat(captor.getValue().getStatus())
         .isEqualTo(PaymentEventOutboxEntity.OutboxStatus.PUBLISHED);
-    verify(kafkaTemplate, times(1)).send(eq(DEFAULT_TOPIC), eq(DEFAULT_PAYMENT_ID.toString()), any());
+    verify(kafkaTemplate, times(1))
+        .send(eq(DEFAULT_TOPIC), eq(DEFAULT_PAYMENT_ID.toString()), any());
   }
 
   @Test
@@ -119,12 +118,9 @@ class PaymentOutboxRelayTest {
             new BigDecimal("10000"),
             Instant.now());
 
-    given(
-            outboxRepository.findPendingEvents(
-                PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
+    given(outboxRepository.findPendingEvents(PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
         .willReturn(List.of(outbox));
-    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class))
-        .willReturn(message);
+    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class)).willReturn(message);
     given(kafkaTemplate.send(eq(DEFAULT_TOPIC), eq(DEFAULT_PAYMENT_ID.toString()), any()))
         .willReturn(
             CompletableFuture.failedFuture(new RuntimeException("Kafka connection failed")));
@@ -164,12 +160,9 @@ class PaymentOutboxRelayTest {
             new BigDecimal("10000"),
             Instant.now());
 
-    given(
-            outboxRepository.findPendingEvents(
-                PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
+    given(outboxRepository.findPendingEvents(PaymentEventOutboxEntity.OutboxStatus.PENDING, 3))
         .willReturn(List.of(outbox));
-    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class))
-        .willReturn(message);
+    given(objectMapper.readValue(DEFAULT_PAYLOAD, PaymentProcessMessage.class)).willReturn(message);
     given(kafkaTemplate.send(eq(DEFAULT_TOPIC), eq(DEFAULT_PAYMENT_ID.toString()), any()))
         .willReturn(
             CompletableFuture.failedFuture(new RuntimeException("Kafka connection failed")));
@@ -186,4 +179,3 @@ class PaymentOutboxRelayTest {
     assertThat(captor.getValue().getRetryCount()).isEqualTo(4);
   }
 }
-

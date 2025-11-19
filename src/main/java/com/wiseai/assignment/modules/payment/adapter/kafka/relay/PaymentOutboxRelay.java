@@ -1,17 +1,19 @@
 package com.wiseai.assignment.modules.payment.adapter.kafka.relay;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
-import com.wiseai.assignment.modules.payment.adapter.jpa.repository.PaymentEventOutboxJpaRepository;
-import com.wiseai.assignment.modules.payment.application.event.PaymentCancelRequestMessage;
-import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
+import com.wiseai.assignment.modules.payment.adapter.jpa.repository.PaymentEventOutboxJpaRepository;
+import com.wiseai.assignment.modules.payment.application.event.PaymentCancelRequestMessage;
+import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -43,9 +45,7 @@ public class PaymentOutboxRelay {
         outbox.markPublished();
         outboxRepository.save(outbox);
         log.debug(
-            "Outbox 이벤트 발행 성공: eventId={}, type={}",
-            outbox.getEventId(),
-            outbox.getEventType());
+            "Outbox 이벤트 발행 성공: eventId={}, type={}", outbox.getEventId(), outbox.getEventType());
       } catch (Exception e) {
         log.error(
             "Outbox 이벤트 발행 실패: eventId={}, type={}, retryCount={}",
@@ -67,13 +67,13 @@ public class PaymentOutboxRelay {
   }
 
   private void publishEvent(PaymentEventOutboxEntity outbox)
-      throws JsonProcessingException, InterruptedException, java.util.concurrent.ExecutionException {
+      throws JsonProcessingException,
+          InterruptedException,
+          java.util.concurrent.ExecutionException {
     String key = extractKey(outbox);
     Object message = deserializeMessage(outbox);
 
-    kafkaTemplate
-        .send(outbox.getTopic(), key, message)
-        .get(); // 동기적으로 발행하여 실패 시 예외 발생
+    kafkaTemplate.send(outbox.getTopic(), key, message).get(); // 동기적으로 발행하여 실패 시 예외 발생
   }
 
   private String extractKey(PaymentEventOutboxEntity outbox) throws JsonProcessingException {
@@ -99,4 +99,3 @@ public class PaymentOutboxRelay {
     throw new IllegalArgumentException("알 수 없는 이벤트 타입: " + outbox.getEventType());
   }
 }
-

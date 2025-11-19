@@ -1,11 +1,13 @@
 package com.wiseai.assignment.modules.payment.application.service.event;
 
-import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
-import com.wiseai.assignment.modules.payment.config.PaymentKafkaTopicsProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
+import com.wiseai.assignment.modules.payment.config.PaymentKafkaTopicsProperties;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -17,10 +19,7 @@ public class PaymentDlqProducer {
 
   public void publishProcessFailure(PaymentProcessMessage message, Throwable cause) {
     kafkaTemplate
-        .send(
-            topicsProperties.getProcessDlq(),
-            message.paymentId().toString(),
-            message)
+        .send(topicsProperties.getProcessDlq(), message.paymentId().toString(), message)
         .whenComplete(
             (result, ex) -> {
               if (ex != null) {
@@ -39,4 +38,3 @@ public class PaymentDlqProducer {
             });
   }
 }
-

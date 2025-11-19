@@ -1,10 +1,11 @@
 package com.wiseai.assignment.modules.payment.adapter.jpa.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,8 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentProcessLogEntity {
 
-  @Id
-  private String eventId;
+  @Id private String eventId;
 
   @Column(nullable = false)
   private Long paymentId;
@@ -29,4 +29,3 @@ public class PaymentProcessLogEntity {
     this.processedAt = processedAt;
   }
 }
-

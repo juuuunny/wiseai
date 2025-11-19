@@ -1,8 +1,9 @@
 package com.wiseai.assignment.modules.payment.application.event;
 
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
+
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 
 public record PaymentProcessMessage(
     String eventId,
@@ -11,4 +12,3 @@ public record PaymentProcessMessage(
     PaymentMethod paymentMethod,
     BigDecimal amount,
     Instant createdAt) {}
-

@@ -1,7 +1,8 @@
 package com.wiseai.assignment.modules.payment.application.event;
 
-import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import java.time.Instant;
+
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 
 public record PaymentCancelRequestMessage(
     String eventId,
@@ -9,4 +10,3 @@ public record PaymentCancelRequestMessage(
     PaymentMethod paymentMethod,
     String transactionId,
     Instant createdAt) {}
-
