@@ -86,7 +86,8 @@ public class ReservationController implements ReservationApi {
   public ResponseEntity<SuccessResponse<PaymentResponse>> processReservationPayment(
       Long id, ProcessReservationPaymentRequest request) {
     log.debug("예약 결제 처리 API 요청: reservationId={}, paymentMethod={}", id, request.paymentMethod());
-    PaymentResponse response = processReservationPaymentUseCase.processPayment(id, request.paymentMethod());
+    PaymentResponse response =
+        processReservationPaymentUseCase.processPayment(id, request.paymentMethod());
     log.debug("예약 결제 처리 완료: reservationId={}, paymentId={}", id, response.id());
     return ResponseEntity.ok(
         SuccessResponse.of(ReservationSuccessStatus.OK_PROCESS_PAYMENT, response));

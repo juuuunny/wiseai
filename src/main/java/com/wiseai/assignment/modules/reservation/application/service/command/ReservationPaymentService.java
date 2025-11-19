@@ -39,7 +39,8 @@ public class ReservationPaymentService implements ProcessReservationPaymentUseCa
                 });
 
     if (reservation.getStatus() != ReservationStatus.PENDING) {
-      log.warn("결제 가능한 상태가 아님: reservationId={}, status={}", reservationId, reservation.getStatus());
+      log.warn(
+          "결제 가능한 상태가 아님: reservationId={}, status={}", reservationId, reservation.getStatus());
       throw new ReservationException(ReservationErrorStatus.INVALID_PAYMENT_STATUS);
     }
 
@@ -51,4 +52,3 @@ public class ReservationPaymentService implements ProcessReservationPaymentUseCa
     return paymentResponse;
   }
 }
-

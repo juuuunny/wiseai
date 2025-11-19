@@ -2,9 +2,7 @@ package com.wiseai.assignment.modules.reservation.application.service.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -68,7 +66,8 @@ class ReservationPaymentServiceTest {
         .willReturn(paymentResponse);
 
     // when
-    PaymentResponse result = reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD);
+    PaymentResponse result =
+        reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD);
 
     // then
     assertThat(result).isNotNull();
@@ -85,7 +84,8 @@ class ReservationPaymentServiceTest {
     given(reservationQueryPort.findById(RESERVATION_ID)).willReturn(Optional.empty());
 
     // when & then
-    assertThatThrownBy(() -> reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD))
+    assertThatThrownBy(
+            () -> reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD))
         .isInstanceOf(ReservationException.class)
         .extracting("errorCode")
         .isEqualTo(ReservationErrorStatus.NOT_FOUND);
@@ -109,10 +109,10 @@ class ReservationPaymentServiceTest {
     given(reservationQueryPort.findById(RESERVATION_ID)).willReturn(Optional.of(reservation));
 
     // when & then
-    assertThatThrownBy(() -> reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD))
+    assertThatThrownBy(
+            () -> reservationPaymentService.processPayment(RESERVATION_ID, PAYMENT_METHOD))
         .isInstanceOf(ReservationException.class)
         .extracting("errorCode")
         .isEqualTo(ReservationErrorStatus.INVALID_PAYMENT_STATUS);
   }
 }
-

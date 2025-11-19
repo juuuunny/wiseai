@@ -283,9 +283,16 @@ class ReservationControllerTest {
 
     PaymentResponse paymentResponse =
         new PaymentResponse(
-            1L, DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_TOTAL_AMOUNT, PaymentStatus.PENDING, null);
+            1L,
+            DEFAULT_RESERVATION_ID,
+            PaymentMethod.TOSS,
+            DEFAULT_TOTAL_AMOUNT,
+            PaymentStatus.PENDING,
+            null);
 
-    given(processReservationPaymentUseCase.processPayment(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
+    given(
+            processReservationPaymentUseCase.processPayment(
+                DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
         .willReturn(paymentResponse);
 
     // when & then
@@ -311,7 +318,9 @@ class ReservationControllerTest {
     ProcessReservationPaymentRequest request =
         new ProcessReservationPaymentRequest(PaymentMethod.TOSS);
 
-    given(processReservationPaymentUseCase.processPayment(RESERVATION_ID_NOT_FOUND, PaymentMethod.TOSS))
+    given(
+            processReservationPaymentUseCase.processPayment(
+                RESERVATION_ID_NOT_FOUND, PaymentMethod.TOSS))
         .willThrow(new ReservationException(ReservationErrorStatus.NOT_FOUND));
 
     // when & then
@@ -333,7 +342,9 @@ class ReservationControllerTest {
     ProcessReservationPaymentRequest request =
         new ProcessReservationPaymentRequest(PaymentMethod.TOSS);
 
-    given(processReservationPaymentUseCase.processPayment(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
+    given(
+            processReservationPaymentUseCase.processPayment(
+                DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
         .willThrow(new ReservationException(ReservationErrorStatus.INVALID_PAYMENT_STATUS));
 
     // when & then

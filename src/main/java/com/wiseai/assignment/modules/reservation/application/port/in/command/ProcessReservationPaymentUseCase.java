@@ -6,4 +6,3 @@ import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 public interface ProcessReservationPaymentUseCase {
   PaymentResponse processPayment(Long reservationId, PaymentMethod paymentMethod);
 }
-
