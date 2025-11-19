@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.wiseai.assignment.modules.meetingroom.application.port.out.command.MeetingRoomCommandPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
+import com.wiseai.assignment.modules.payment.adapter.kafka.listener.PaymentCancelListener;
+import com.wiseai.assignment.modules.payment.adapter.kafka.listener.PaymentProcessListener;
 import com.wiseai.assignment.modules.payment.adapter.kafka.relay.PaymentOutboxRelay;
 import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
 import com.wiseai.assignment.modules.payment.application.service.event.PaymentDlqProducer;
@@ -44,6 +46,8 @@ class DeadlockPreventionIntegrationTest {
   @MockBean private PaymentCancelEventProducer paymentCancelEventProducer;
   @MockBean private PaymentDlqProducer paymentDlqProducer;
   @MockBean private PaymentOutboxRelay paymentOutboxRelay;
+  @MockBean private PaymentProcessListener paymentProcessListener;
+  @MockBean private PaymentCancelListener paymentCancelListener;
 
   private Long meetingRoomId1;
   private Long meetingRoomId2;
