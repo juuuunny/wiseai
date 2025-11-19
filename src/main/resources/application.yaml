@@ -28,6 +28,8 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     template:
       default-topic: payment.process
+    admin:
+      fail-fast: false
 
 server:
   port: 8080
@@ -54,6 +56,11 @@ logging:
     root: INFO
     org.springframework: INFO
 
+payment:
+  kafka:
+    topics:
+      process: payment.process
+
 ---
 spring:
   config:
@@ -79,6 +86,8 @@ spring:
       timeout: 2000ms
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    admin:
+      fail-fast: false
 
 springdoc:
   swagger-ui:
