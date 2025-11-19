@@ -32,34 +32,27 @@ public class PaymentProcessListener {
         message.paymentId(),
         message.paymentMethod());
 
-    if (!paymentProcessLogService.tryAcquire(message.eventId(), message.paymentId())) {
-      return;
-    }
-
     Payment payment =
         paymentQueryPort
             .findById(message.paymentId())
             .orElseThrow(
                 () -> new PaymentException(PaymentErrorStatus.NOT_FOUND));
 
+    if (!paymentProcessLogService.tryAcquire(message.eventId(), message.paymentId())) {
+      return;
+    }
+
     PaymentGateway gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
 
-    try {
-      String transactionId =
-          gateway.processPayment(payment.getAmount(), payment.getReservationId()).join();
-      Payment completed = payment.complete(transactionId);
-      paymentCommandPort.update(completed);
-      log.debug(
-          "결제 처리 성공: paymentId={}, transactionId={}",
-          message.paymentId(),
-          transactionId);
-    } catch (Exception e) {
-      paymentProcessLogService.release(message.eventId());
-      Payment failed = payment.fail();
-      paymentCommandPort.update(failed);
-      paymentDlqProducer.publishProcessFailure(message, e);
-      log.error("결제 처리 실패 - DLQ로 이동: paymentId={}", message.paymentId(), e);
-    }
+    String transactionId =
+        gateway.processPayment(payment.getAmount(), payment.getReservationId()).join();
+    Payment completed = payment.complete(transactionId);
+    paymentCommandPort.update(completed);
+    log.debug(
+        "결제 처리 성공: paymentId={}, transactionId={}",
+        message.paymentId(),
+        transactionId);
+    paymentProcessLogService.release(message.eventId());
   }
 }
 

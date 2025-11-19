@@ -72,6 +72,7 @@ class PaymentProcessListenerTest {
     Payment updated = captor.getValue();
     assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     assertThat(updated.getTransactionId()).isEqualTo("txn-1");
+    verify(paymentProcessLogService).release("event-1");
   }
 
   @Test
@@ -86,6 +87,10 @@ class PaymentProcessListenerTest {
             DEFAULT_AMOUNT,
             Instant.now());
 
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+
+    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
     given(paymentProcessLogService.tryAcquire("event-dup", DEFAULT_PAYMENT_ID)).willReturn(false);
 
     paymentProcessListener.handleMessage(message);
@@ -94,34 +99,5 @@ class PaymentProcessListenerTest {
     verify(paymentCommandPort, never()).update(any());
   }
 
-  @Test
-  @DisplayName("처리 실패 시 로그 엔트리가 해제된다")
-  void handleMessage_fail() {
-    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
-    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
-
-    PaymentProcessMessage message =
-        new PaymentProcessMessage(
-            "event-fail",
-            DEFAULT_PAYMENT_ID,
-            DEFAULT_RESERVATION_ID,
-            PaymentMethod.TOSS,
-            DEFAULT_AMOUNT,
-            Instant.now());
-
-    given(paymentProcessLogService.tryAcquire("event-fail", DEFAULT_PAYMENT_ID)).willReturn(true);
-    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
-    given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
-    given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
-        .willReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
-
-    paymentProcessListener.handleMessage(message);
-
-    verify(paymentProcessLogService).release("event-fail");
-    verify(paymentDlqProducer)
-        .publishProcessFailure(
-            org.mockito.Mockito.eq(message),
-            org.mockito.Mockito.any(RuntimeException.class));
-  }
 }
 
