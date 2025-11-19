@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -22,7 +23,11 @@ public class TossPaymentGateway implements PaymentGateway {
   public TossPaymentGateway(
       RestClient.Builder restClientBuilder,
       @Value("${payment.gateway.toss.url:http://wiremock:8080/toss/payments}") String gatewayUrl) {
-    this.restClient = restClientBuilder.build();
+    this.restClient =
+        restClientBuilder
+            .baseUrl(gatewayUrl)
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .build();
     this.gatewayUrl = gatewayUrl;
   }
 
@@ -35,12 +40,7 @@ public class TossPaymentGateway implements PaymentGateway {
           try {
             var request = new TossPaymentRequest(amount, orderId);
             var response =
-                restClient
-                    .post()
-                    .uri(gatewayUrl)
-                    .body(request)
-                    .retrieve()
-                    .body(TossPaymentResponse.class);
+                restClient.post().uri("/").body(request).retrieve().body(TossPaymentResponse.class);
 
             if (response == null || response.transactionId() == null) {
               throw new RuntimeException("TOSS 결제 처리 실패: 응답이 null입니다.");
@@ -62,11 +62,7 @@ public class TossPaymentGateway implements PaymentGateway {
     return CompletableFuture.supplyAsync(
         () -> {
           try {
-            restClient
-                .post()
-                .uri(gatewayUrl + "/" + transactionId + "/cancel")
-                .retrieve()
-                .toBodilessEntity();
+            restClient.post().uri("/" + transactionId + "/cancel").retrieve().toBodilessEntity();
 
             log.debug("TOSS 결제 취소 완료: transactionId={}", transactionId);
             return true;

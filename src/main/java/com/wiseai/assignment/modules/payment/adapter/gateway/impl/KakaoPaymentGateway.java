@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -23,7 +24,11 @@ public class KakaoPaymentGateway implements PaymentGateway {
       RestClient.Builder restClientBuilder,
       @Value("${payment.gateway.kakao.url:http://wiremock:8080/kakao/payments}")
           String gatewayUrl) {
-    this.restClient = restClientBuilder.build();
+    this.restClient =
+        restClientBuilder
+            .baseUrl(gatewayUrl)
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .build();
     this.gatewayUrl = gatewayUrl;
   }
 
@@ -38,7 +43,7 @@ public class KakaoPaymentGateway implements PaymentGateway {
             var response =
                 restClient
                     .post()
-                    .uri(gatewayUrl)
+                    .uri("/")
                     .body(request)
                     .retrieve()
                     .body(KakaoPaymentResponse.class);
@@ -63,11 +68,7 @@ public class KakaoPaymentGateway implements PaymentGateway {
     return CompletableFuture.supplyAsync(
         () -> {
           try {
-            restClient
-                .post()
-                .uri(gatewayUrl + "/" + transactionId + "/cancel")
-                .retrieve()
-                .toBodilessEntity();
+            restClient.post().uri("/" + transactionId + "/cancel").retrieve().toBodilessEntity();
 
             log.debug("KAKAO 결제 취소 완료: transactionId={}", transactionId);
             return true;

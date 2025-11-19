@@ -10,7 +10,9 @@ import com.wiseai.assignment.modules.payment.application.port.in.command.CancelP
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
+import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
+import com.wiseai.assignment.modules.payment.application.service.gateway.PaymentGatewayFactory;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
@@ -27,6 +29,7 @@ public class PaymentCommandService
 
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentQueryPort paymentQueryPort;
+  private final PaymentGatewayFactory paymentGatewayFactory;
 
   @Override
   @Transactional
@@ -40,6 +43,30 @@ public class PaymentCommandService
 
     Payment payment = Payment.create(reservationId, paymentMethod, amount);
     Payment saved = paymentCommandPort.save(payment);
+
+    // PaymentGateway를 통해 실제 결제 처리 (비동기)
+    PaymentGateway gateway = paymentGatewayFactory.getGateway(paymentMethod);
+    gateway
+        .processPayment(amount, reservationId)
+        .thenAccept(
+            transactionId -> {
+              try {
+                Payment completed = saved.complete(transactionId);
+                paymentCommandPort.update(completed);
+                log.debug("결제 처리 완료: paymentId={}, transactionId={}", saved.getId(), transactionId);
+              } catch (Exception e) {
+                log.error("결제 완료 처리 중 오류: paymentId={}", saved.getId(), e);
+                Payment failed = saved.fail();
+                paymentCommandPort.update(failed);
+              }
+            })
+        .exceptionally(
+            ex -> {
+              log.error("결제 처리 중 오류 발생: paymentId={}", saved.getId(), ex);
+              Payment failed = saved.fail();
+              paymentCommandPort.update(failed);
+              return null;
+            });
 
     log.debug("결제 생성 완료: paymentId={}", saved.getId());
     return toResponse(saved);
@@ -79,6 +106,26 @@ public class PaymentCommandService
                   log.warn("결제를 찾을 수 없음: paymentId={}", id);
                   return new PaymentException(PaymentErrorStatus.NOT_FOUND);
                 });
+
+    // PaymentGateway를 통해 실제 결제 취소 처리
+    if (payment.getTransactionId() != null) {
+      PaymentGateway gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
+      gateway
+          .cancelPayment(payment.getTransactionId())
+          .thenAccept(
+              success -> {
+                if (success) {
+                  log.debug("결제 게이트웨이 취소 성공: paymentId={}", id);
+                } else {
+                  log.warn("결제 게이트웨이 취소 실패: paymentId={}", id);
+                }
+              })
+          .exceptionally(
+              ex -> {
+                log.error("결제 게이트웨이 취소 중 오류: paymentId={}", id, ex);
+                return null;
+              });
+    }
 
     Payment cancelled = payment.cancel();
     Payment updated = paymentCommandPort.update(cancelled);
