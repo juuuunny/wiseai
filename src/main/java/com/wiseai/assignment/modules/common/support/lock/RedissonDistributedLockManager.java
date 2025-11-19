@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import com.wiseai.assignment.modules.common.exception.BusinessException;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 /** Redisson 분산락을 실행하여 락을 잡을 경우 수행하고, 실패 시 재시도하며, 예외를 명확하게 처리한다. */
 @Slf4j
 @Component
+@ConditionalOnBean(RedissonClient.class)
 @RequiredArgsConstructor
 public class RedissonDistributedLockManager {
   private final RedissonClient redissonClient;
