@@ -1,4 +1,4 @@
-package com.wiseai.assignment.modules.payment.application.service.event;
+package com.wiseai.assignment.modules.payment.adapter.kafka.relay;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,11 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wiseai.assignment.modules.payment.adapter.jpa.entity.PaymentEventOutboxEntity;
 import com.wiseai.assignment.modules.payment.adapter.jpa.repository.PaymentEventOutboxJpaRepository;
 import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
-import com.wiseai.assignment.modules.payment.config.PaymentKafkaTopicsProperties;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +33,6 @@ class PaymentOutboxRelayTest {
   @Mock private PaymentEventOutboxJpaRepository outboxRepository;
   @Mock private KafkaTemplate<String, Object> kafkaTemplate;
   @Mock private ObjectMapper objectMapper;
-  @Mock private PaymentKafkaTopicsProperties topicsProperties;
 
   @InjectMocks private PaymentOutboxRelay paymentOutboxRelay;
 

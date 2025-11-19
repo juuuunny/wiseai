@@ -1,4 +1,4 @@
-package com.wiseai.assignment.modules.payment.application.service.event;
+package com.wiseai.assignment.modules.payment.adapter.kafka.relay;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +42,10 @@ public class PaymentOutboxRelay {
         publishEvent(outbox);
         outbox.markPublished();
         outboxRepository.save(outbox);
-        log.debug("Outbox 이벤트 발행 성공: eventId={}, type={}", outbox.getEventId(), outbox.getEventType());
+        log.debug(
+            "Outbox 이벤트 발행 성공: eventId={}, type={}",
+            outbox.getEventId(),
+            outbox.getEventType());
       } catch (Exception e) {
         log.error(
             "Outbox 이벤트 발행 실패: eventId={}, type={}, retryCount={}",
