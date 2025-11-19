@@ -21,6 +21,7 @@ public class PaymentProcessListener {
   private final PaymentQueryPort paymentQueryPort;
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentGatewayFactory paymentGatewayFactory;
+  private final PaymentProcessLogService paymentProcessLogService;
 
   @KafkaListener(topics = "${payment.kafka.topics.process}")
   public void handleMessage(PaymentProcessMessage message) {
@@ -29,6 +30,10 @@ public class PaymentProcessListener {
         message.eventId(),
         message.paymentId(),
         message.paymentMethod());
+
+    if (!paymentProcessLogService.tryAcquire(message.eventId(), message.paymentId())) {
+      return;
+    }
 
     Payment payment =
         paymentQueryPort
@@ -48,6 +53,7 @@ public class PaymentProcessListener {
           message.paymentId(),
           transactionId);
     } catch (Exception e) {
+      paymentProcessLogService.release(message.eventId());
       Payment failed = payment.fail();
       paymentCommandPort.update(failed);
       log.error("결제 처리 실패: paymentId={}", message.paymentId(), e);

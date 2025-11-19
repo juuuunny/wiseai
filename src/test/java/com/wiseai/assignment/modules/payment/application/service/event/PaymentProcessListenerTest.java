@@ -1,9 +1,12 @@
 package com.wiseai.assignment.modules.payment.application.service.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentCaptor;
 import com.wiseai.assignment.modules.payment.application.event.PaymentProcessMessage;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
@@ -32,6 +35,7 @@ class PaymentProcessListenerTest {
   @Mock private PaymentCommandPort paymentCommandPort;
   @Mock private PaymentGatewayFactory paymentGatewayFactory;
   @Mock private PaymentGateway paymentGateway;
+  @Mock private PaymentProcessLogService paymentProcessLogService;
 
   @InjectMocks private PaymentProcessListener paymentProcessListener;
 
@@ -58,6 +62,7 @@ class PaymentProcessListenerTest {
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
         .willReturn(CompletableFuture.completedFuture("txn-1"));
+    given(paymentProcessLogService.tryAcquire("event-1", DEFAULT_PAYMENT_ID)).willReturn(true);
 
     paymentProcessListener.handleMessage(message);
 
@@ -66,6 +71,56 @@ class PaymentProcessListenerTest {
     Payment updated = captor.getValue();
     assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     assertThat(updated.getTransactionId()).isEqualTo("txn-1");
+  }
+
+  @Test
+  @DisplayName("중복 이벤트는 무시된다")
+  void handleMessage_duplicate() {
+    PaymentProcessMessage message =
+        new PaymentProcessMessage(
+            "event-dup",
+            DEFAULT_PAYMENT_ID,
+            DEFAULT_RESERVATION_ID,
+            PaymentMethod.TOSS,
+            DEFAULT_AMOUNT,
+            Instant.now());
+
+    given(paymentProcessLogService.tryAcquire("event-dup", DEFAULT_PAYMENT_ID)).willReturn(false);
+
+    paymentProcessListener.handleMessage(message);
+
+    verify(paymentGatewayFactory, never()).getGateway(PaymentMethod.TOSS);
+    verify(paymentCommandPort, never()).update(any());
+  }
+
+  @Test
+  @DisplayName("처리 실패 시 로그 엔트리가 해제된다")
+  void handleMessage_fail() {
+    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
+    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+
+    PaymentProcessMessage message =
+        new PaymentProcessMessage(
+            "event-fail",
+            DEFAULT_PAYMENT_ID,
+            DEFAULT_RESERVATION_ID,
+            PaymentMethod.TOSS,
+            DEFAULT_AMOUNT,
+            Instant.now());
+
+    given(paymentProcessLogService.tryAcquire("event-fail", DEFAULT_PAYMENT_ID)).willReturn(true);
+    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
+    given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
+    given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
+        .willReturn(CompletableFuture.failedFuture(new RuntimeException("boom")));
+
+    try {
+      paymentProcessListener.handleMessage(message);
+    } catch (RuntimeException ignored) {
+      // expected
+    }
+
+    verify(paymentProcessLogService).release("event-fail");
   }
 }
 
