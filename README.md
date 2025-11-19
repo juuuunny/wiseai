@@ -136,6 +136,16 @@ open build/reports/jacoco/test/html/index.html
 ./gradlew clean test --tests "*IntegrationTest"
 ```
 
+**통합 테스트 구성**:
+- `ReservationPaymentIntegrationTest`: 예약-결제 통합 플로우 테스트
+- `DeadlockPreventionIntegrationTest`: Deadlock 방지 시나리오 테스트
+- `MockPaymentApiIntegrationTest`: Mock 결제 게이트웨이 테스트
+
+**통합 테스트 환경**:
+- H2 인메모리 데이터베이스 사용
+- Kafka, Redis 관련 컴포넌트는 Mock 처리
+- 외부 의존성 없이 독립적으로 실행 가능
+
 ---
 
 ## 🔍 품질 검사
@@ -302,7 +312,10 @@ UserQueryAdapter implements UserQueryPort {
 #### 3. Event-Driven Architecture
 
 - Domain Event를 통한 모듈 간 비동기 통신
-- 향후 Kafka로 확장 가능한 구조
+- Kafka를 활용한 비동기 이벤트 처리
+- Outbox Pattern을 통한 트랜잭션 일관성 보장
+- Idempotency를 통한 중복 처리 방지
+- DLQ(Dead Letter Queue) 및 Exponential Backoff를 통한 안정적인 이벤트 처리
 
 ### 모듈 구성
 
@@ -310,6 +323,9 @@ UserQueryAdapter implements UserQueryPort {
 - **auth**: 인증/인가 (JWT 토큰 관리, 리프레시 토큰)
 - **security**: Spring Security 설정 및 JWT 필터
 - **common**: 공통 응답, 예외 처리, 유틸리티
+- **reservation**: 예약 관리 (생성, 조회, 취소)
+- **payment**: 결제 처리 (다중 결제사 통합, 웹훅 처리)
+- **meetingroom**: 회의실 관리
 
 ---
 
