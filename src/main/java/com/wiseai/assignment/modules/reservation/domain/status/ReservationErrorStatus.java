@@ -19,7 +19,8 @@ public enum ReservationErrorStatus implements BaseErrorCode {
   INVALID_TOTAL_AMOUNT(HttpStatus.BAD_REQUEST, "RESERVATION-008", "총 결제 금액은 0 이상이어야 합니다."),
   NOT_FOUND(HttpStatus.NOT_FOUND, "RESERVATION-006", "예약을 찾을 수 없습니다."),
   INVALID_CANCEL_STATUS(HttpStatus.BAD_REQUEST, "RESERVATION-007", "취소할 수 없는 예약 상태입니다."),
-  UNAUTHORIZED(HttpStatus.FORBIDDEN, "RESERVATION-009", "본인의 예약만 취소할 수 있습니다.");
+  UNAUTHORIZED(HttpStatus.FORBIDDEN, "RESERVATION-009", "본인의 예약만 취소할 수 있습니다."),
+  INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "RESERVATION-010", "결제 가능한 예약 상태가 아닙니다.");
 
   private final HttpStatus httpStatus;
   private final String code;
