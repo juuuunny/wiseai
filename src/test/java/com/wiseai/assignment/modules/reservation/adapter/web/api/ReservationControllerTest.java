@@ -27,10 +27,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.wiseai.assignment.modules.common.exception.GlobalExceptionHandler;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
+import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.reservation.application.dto.request.CreateReservationRequest;
+import com.wiseai.assignment.modules.reservation.application.dto.request.ProcessReservationPaymentRequest;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CancelReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
+import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationsUseCase;
 import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
@@ -62,6 +67,7 @@ class ReservationControllerTest {
   @MockBean private GetReservationUseCase getReservationUseCase;
   @MockBean private GetReservationsUseCase getReservationsUseCase;
   @MockBean private CancelReservationUseCase cancelReservationUseCase;
+  @MockBean private ProcessReservationPaymentUseCase processReservationPaymentUseCase;
 
   // 공통 테스트 데이터
   private static final int TEST_YEAR = 2024;
@@ -266,5 +272,90 @@ class ReservationControllerTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.httpStatus").value(403))
         .andExpect(jsonPath("$.code").value("RESERVATION-009"));
+  }
+
+  @Test
+  @DisplayName("예약 결제 처리 성공")
+  void processReservationPayment_success() throws Exception {
+    // given
+    ProcessReservationPaymentRequest request =
+        new ProcessReservationPaymentRequest(PaymentMethod.TOSS);
+
+    PaymentResponse paymentResponse =
+        new PaymentResponse(
+            1L,
+            DEFAULT_RESERVATION_ID,
+            PaymentMethod.TOSS,
+            DEFAULT_TOTAL_AMOUNT,
+            PaymentStatus.PENDING,
+            null);
+
+    given(
+            processReservationPaymentUseCase.processPayment(
+                DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
+        .willReturn(paymentResponse);
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/reservations/{id}/payment", DEFAULT_RESERVATION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.httpStatus").value(200))
+        .andExpect(jsonPath("$.code").value("RESERVATION-005"))
+        .andExpect(jsonPath("$.message").value("예약 결제 처리에 성공했습니다."))
+        .andExpect(jsonPath("$.data.id").value(1L))
+        .andExpect(jsonPath("$.data.reservationId").value(DEFAULT_RESERVATION_ID))
+        .andExpect(jsonPath("$.data.paymentMethod").value("TOSS"));
+  }
+
+  @Test
+  @DisplayName("예약 결제 처리 실패 - 예약을 찾을 수 없음")
+  void processReservationPayment_fail_notFound() throws Exception {
+    // given
+    ProcessReservationPaymentRequest request =
+        new ProcessReservationPaymentRequest(PaymentMethod.TOSS);
+
+    given(
+            processReservationPaymentUseCase.processPayment(
+                RESERVATION_ID_NOT_FOUND, PaymentMethod.TOSS))
+        .willThrow(new ReservationException(ReservationErrorStatus.NOT_FOUND));
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/reservations/{id}/payment", RESERVATION_ID_NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.httpStatus").value(404))
+        .andExpect(jsonPath("$.code").value("RESERVATION-006"));
+  }
+
+  @Test
+  @DisplayName("예약 결제 처리 실패 - 결제 불가능한 상태")
+  void processReservationPayment_fail_invalidStatus() throws Exception {
+    // given
+    ProcessReservationPaymentRequest request =
+        new ProcessReservationPaymentRequest(PaymentMethod.TOSS);
+
+    given(
+            processReservationPaymentUseCase.processPayment(
+                DEFAULT_RESERVATION_ID, PaymentMethod.TOSS))
+        .willThrow(new ReservationException(ReservationErrorStatus.INVALID_PAYMENT_STATUS));
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/reservations/{id}/payment", DEFAULT_RESERVATION_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.httpStatus").value(400))
+        .andExpect(jsonPath("$.code").value("RESERVATION-010"));
   }
 }

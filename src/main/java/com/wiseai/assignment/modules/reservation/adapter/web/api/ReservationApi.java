@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.wiseai.assignment.modules.common.dto.response.SuccessResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.reservation.application.dto.request.CreateReservationRequest;
+import com.wiseai.assignment.modules.reservation.application.dto.request.ProcessReservationPaymentRequest;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,4 +59,14 @@ public interface ReservationApi {
   @DeleteMapping("/reservations/{id}/users/{userId}")
   ResponseEntity<SuccessResponse<ReservationResponse>> cancelReservation(
       @PathVariable @Min(1) Long id, @PathVariable @Min(1) Long userId);
+
+  @Operation(summary = "예약 결제 처리", description = "예약에 대한 결제를 처리합니다.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "결제 처리 성공"),
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 결제 불가능한 상태"),
+    @ApiResponse(responseCode = "404", description = "예약을 찾을 수 없음")
+  })
+  @PostMapping("/reservations/{id}/payment")
+  ResponseEntity<SuccessResponse<PaymentResponse>> processReservationPayment(
+      @PathVariable @Min(1) Long id, @Valid @RequestBody ProcessReservationPaymentRequest request);
 }

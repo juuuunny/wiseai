@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wiseai.assignment.modules.common.dto.response.SuccessResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.reservation.application.dto.request.CreateReservationRequest;
+import com.wiseai.assignment.modules.reservation.application.dto.request.ProcessReservationPaymentRequest;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CancelReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
+import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationsUseCase;
 import com.wiseai.assignment.modules.reservation.domain.status.ReservationSuccessStatus;
@@ -27,6 +30,7 @@ public class ReservationController implements ReservationApi {
   private final GetReservationUseCase getReservationUseCase;
   private final GetReservationsUseCase getReservationsUseCase;
   private final CancelReservationUseCase cancelReservationUseCase;
+  private final ProcessReservationPaymentUseCase processReservationPaymentUseCase;
 
   @Override
   public ResponseEntity<SuccessResponse<ReservationResponse>> createReservation(
@@ -76,5 +80,16 @@ public class ReservationController implements ReservationApi {
     log.debug("예약 취소 완료: reservationId={}", id);
     return ResponseEntity.ok(
         SuccessResponse.of(ReservationSuccessStatus.OK_CANCEL_RESERVATION, response));
+  }
+
+  @Override
+  public ResponseEntity<SuccessResponse<PaymentResponse>> processReservationPayment(
+      Long id, ProcessReservationPaymentRequest request) {
+    log.debug("예약 결제 처리 API 요청: reservationId={}, paymentMethod={}", id, request.paymentMethod());
+    PaymentResponse response =
+        processReservationPaymentUseCase.processPayment(id, request.paymentMethod());
+    log.debug("예약 결제 처리 완료: reservationId={}, paymentId={}", id, response.id());
+    return ResponseEntity.ok(
+        SuccessResponse.of(ReservationSuccessStatus.OK_PROCESS_PAYMENT, response));
   }
 }

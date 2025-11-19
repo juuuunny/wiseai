@@ -13,7 +13,8 @@ public enum ReservationSuccessStatus implements BaseSuccessCode {
   OK_CREATE_RESERVATION(HttpStatus.CREATED, "RESERVATION-001", "예약 생성에 성공했습니다."),
   OK_GET_RESERVATION(HttpStatus.OK, "RESERVATION-002", "예약 조회에 성공했습니다."),
   OK_GET_RESERVATIONS(HttpStatus.OK, "RESERVATION-003", "예약 목록 조회에 성공했습니다."),
-  OK_CANCEL_RESERVATION(HttpStatus.OK, "RESERVATION-004", "예약 취소에 성공했습니다.");
+  OK_CANCEL_RESERVATION(HttpStatus.OK, "RESERVATION-004", "예약 취소에 성공했습니다."),
+  OK_PROCESS_PAYMENT(HttpStatus.OK, "RESERVATION-005", "예약 결제 처리에 성공했습니다.");
 
   private final HttpStatus httpStatus;
   private final String code;
