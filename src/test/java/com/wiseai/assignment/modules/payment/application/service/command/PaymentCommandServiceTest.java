@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,12 +15,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
-import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
 import com.wiseai.assignment.modules.payment.application.service.gateway.PaymentGatewayFactory;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
@@ -35,8 +34,7 @@ class PaymentCommandServiceTest {
   @Mock private PaymentCommandPort paymentCommandPort;
   @Mock private PaymentQueryPort paymentQueryPort;
   @Mock private PaymentGatewayFactory paymentGatewayFactory;
-  @Mock private PaymentGateway paymentGateway;
-  @Mock private PlatformTransactionManager transactionManager;
+  @Mock private PaymentEventProducer paymentEventProducer;
 
   @InjectMocks private PaymentCommandService paymentCommandService;
 
@@ -53,9 +51,6 @@ class PaymentCommandServiceTest {
     Payment saved = payment.withId(DEFAULT_PAYMENT_ID);
 
     given(paymentCommandPort.save(any(Payment.class))).willReturn(saved);
-    given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
-    given(paymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
-        .willReturn(CompletableFuture.completedFuture(DEFAULT_TRANSACTION_ID));
 
     // when
     PaymentResponse result =
@@ -68,6 +63,8 @@ class PaymentCommandServiceTest {
     assertThat(result.paymentMethod()).isEqualTo(PaymentMethod.TOSS);
     assertThat(result.amount()).isEqualByComparingTo(DEFAULT_AMOUNT);
     assertThat(result.status()).isEqualTo(PaymentStatus.PENDING);
+
+    verify(paymentEventProducer).publishPaymentRequested(saved);
   }
 
   @Test
