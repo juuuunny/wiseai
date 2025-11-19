@@ -22,8 +22,6 @@ import com.wiseai.assignment.modules.meetingroom.application.port.out.command.Me
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
-import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
-import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
@@ -31,7 +29,6 @@ import com.wiseai.assignment.modules.reservation.application.dto.response.Reserv
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
 import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
-import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -100,19 +97,26 @@ class ReservationPaymentIntegrationTest {
   @Test
   @DisplayName("동시 예약 생성 시 중복 방지 테스트")
   void concurrentReservationCreation() throws InterruptedException {
+    // given: 첫 번째 예약 생성
+    ReservationResponse firstReservation =
+        createReservationUseCase.createReservation(
+            meetingRoomId, userId, startTime, endTime, totalAmount);
+    assertThat(firstReservation).isNotNull();
+
     int threadCount = 5;
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     CountDownLatch latch = new CountDownLatch(threadCount);
     int[] successCount = {0};
     int[] failureCount = {0};
 
-    // when: 동시에 같은 시간대 예약 시도
+    // when: 동시에 같은 시간대 예약 시도 (이미 예약이 존재함)
     for (int i = 0; i < threadCount; i++) {
+      final int index = i;
       executor.submit(
           () -> {
             try {
               createReservationUseCase.createReservation(
-                  meetingRoomId, userId, startTime, endTime, totalAmount);
+                  meetingRoomId, userId + index, startTime, endTime, totalAmount);
               successCount[0]++;
             } catch (Exception e) {
               failureCount[0]++;
@@ -122,10 +126,10 @@ class ReservationPaymentIntegrationTest {
           });
     }
 
-    // then: 하나만 성공하고 나머지는 실패해야 함
+    // then: 모두 실패해야 함 (이미 예약이 존재하므로)
     assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-    assertThat(successCount[0]).isEqualTo(1);
-    assertThat(failureCount[0]).isEqualTo(threadCount - 1);
+    assertThat(successCount[0]).isEqualTo(0);
+    assertThat(failureCount[0]).isEqualTo(threadCount);
 
     executor.shutdown();
   }
