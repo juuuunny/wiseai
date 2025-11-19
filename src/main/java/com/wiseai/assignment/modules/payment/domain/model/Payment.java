@@ -21,48 +21,6 @@ public class Payment {
   private final PaymentStatus status;
   private final String transactionId;
 
-  public static Payment create(Long reservationId, PaymentMethod paymentMethod, BigDecimal amount) {
-    validateReservationId(reservationId);
-    validateAmount(amount);
-    validatePaymentMethod(paymentMethod);
-
-    return Payment.builder()
-        .reservationId(reservationId)
-        .paymentMethod(paymentMethod)
-        .amount(amount)
-        .status(PaymentStatus.PENDING)
-        .build();
-  }
-
-  private static void validateReservationId(Long reservationId) {
-    if (reservationId == null || reservationId < 1) {
-      throw new PaymentException(PaymentErrorStatus.INVALID_RESERVATION_ID);
-    }
-  }
-
-  private static void validateAmount(BigDecimal amount) {
-    if (amount == null || amount.signum() <= 0) {
-      throw new PaymentException(PaymentErrorStatus.INVALID_AMOUNT);
-    }
-  }
-
-  private static void validatePaymentMethod(PaymentMethod paymentMethod) {
-    if (paymentMethod == null) {
-      throw new PaymentException(PaymentErrorStatus.INVALID_PAYMENT_METHOD);
-    }
-  }
-
-  public Payment withId(Long id) {
-    return Payment.builder()
-        .id(id)
-        .reservationId(reservationId)
-        .paymentMethod(paymentMethod)
-        .amount(amount)
-        .status(status)
-        .transactionId(transactionId)
-        .build();
-  }
-
   public Payment complete(String transactionId) {
     if (status != PaymentStatus.PENDING) {
       throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
@@ -81,21 +39,6 @@ public class Payment {
         .build();
   }
 
-  public Payment fail() {
-    if (status != PaymentStatus.PENDING) {
-      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
-    }
-
-    return Payment.builder()
-        .id(id)
-        .reservationId(reservationId)
-        .paymentMethod(paymentMethod)
-        .amount(amount)
-        .status(PaymentStatus.FAILED)
-        .transactionId(transactionId)
-        .build();
-  }
-
   public Payment cancel() {
     if (status == PaymentStatus.CANCELLED) {
       throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
@@ -107,6 +50,21 @@ public class Payment {
         .paymentMethod(paymentMethod)
         .amount(amount)
         .status(PaymentStatus.CANCELLED)
+        .transactionId(transactionId)
+        .build();
+  }
+
+  public Payment fail() {
+    if (status != PaymentStatus.PENDING) {
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
+    }
+
+    return Payment.builder()
+        .id(id)
+        .reservationId(reservationId)
+        .paymentMethod(paymentMethod)
+        .amount(amount)
+        .status(PaymentStatus.FAILED)
         .transactionId(transactionId)
         .build();
   }
