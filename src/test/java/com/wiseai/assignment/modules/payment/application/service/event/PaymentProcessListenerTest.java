@@ -63,7 +63,7 @@ class PaymentProcessListenerTest {
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
         .willReturn(CompletableFuture.completedFuture("txn-1"));
-    given(paymentProcessLogService.tryAcquire("event-1", DEFAULT_PAYMENT_ID)).willReturn(true);
+    given(paymentProcessLogService.isProcessed("event-1")).willReturn(false);
 
     paymentProcessListener.handleMessage(message);
 
@@ -72,7 +72,7 @@ class PaymentProcessListenerTest {
     Payment updated = captor.getValue();
     assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     assertThat(updated.getTransactionId()).isEqualTo("txn-1");
-    verify(paymentProcessLogService).release("event-1");
+    verify(paymentProcessLogService).markProcessed("event-1", DEFAULT_PAYMENT_ID);
   }
 
   @Test
@@ -87,11 +87,12 @@ class PaymentProcessListenerTest {
             DEFAULT_AMOUNT,
             Instant.now());
 
-    Payment payment = Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT);
-    Payment paymentWithId = payment.withId(DEFAULT_PAYMENT_ID);
+    Payment payment =
+        Payment.create(DEFAULT_RESERVATION_ID, PaymentMethod.TOSS, DEFAULT_AMOUNT)
+            .withId(DEFAULT_PAYMENT_ID);
 
-    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(paymentWithId));
-    given(paymentProcessLogService.tryAcquire("event-dup", DEFAULT_PAYMENT_ID)).willReturn(false);
+    given(paymentQueryPort.findById(DEFAULT_PAYMENT_ID)).willReturn(Optional.of(payment));
+    given(paymentProcessLogService.isProcessed("event-dup")).willReturn(true);
 
     paymentProcessListener.handleMessage(message);
 

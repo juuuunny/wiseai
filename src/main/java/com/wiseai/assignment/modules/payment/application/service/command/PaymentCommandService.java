@@ -10,10 +10,9 @@ import com.wiseai.assignment.modules.payment.application.port.in.command.CancelP
 import com.wiseai.assignment.modules.payment.application.port.in.command.CompletePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
-import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQueryPort;
 import com.wiseai.assignment.modules.payment.application.service.event.PaymentEventProducer;
-import com.wiseai.assignment.modules.payment.application.service.gateway.PaymentGatewayFactory;
+import com.wiseai.assignment.modules.payment.application.service.event.PaymentCancelEventProducer;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
@@ -31,7 +30,7 @@ public class PaymentCommandService
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentQueryPort paymentQueryPort;
   private final PaymentEventProducer paymentEventProducer;
-  private final PaymentGatewayFactory paymentGatewayFactory;
+  private final PaymentCancelEventProducer paymentCancelEventProducer;
 
   @Override
   @Transactional
@@ -87,31 +86,15 @@ public class PaymentCommandService
                   return new PaymentException(PaymentErrorStatus.NOT_FOUND);
                 });
 
-    // PaymentGateway를 통해 실제 결제 취소 처리
-    if (payment.getTransactionId() != null) {
-      PaymentGateway gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
-      gateway
-          .cancelPayment(payment.getTransactionId())
-          .thenAccept(
-              success -> {
-                if (success) {
-                  log.debug("결제 게이트웨이 취소 성공: paymentId={}", id);
-                } else {
-                  log.warn("결제 게이트웨이 취소 실패: paymentId={}", id);
-                }
-              })
-          .exceptionally(
-              ex -> {
-                log.error("결제 게이트웨이 취소 중 오류: paymentId={}", id, ex);
-                return null;
-              });
+    if (payment.getTransactionId() == null) {
+      log.warn("거래 ID 없이 결제 취소 요청: paymentId={}", id);
+      throw new PaymentException(PaymentErrorStatus.INVALID_STATUS);
     }
 
-    Payment cancelled = payment.cancel();
-    Payment updated = paymentCommandPort.update(cancelled);
+    paymentCancelEventProducer.publishCancellationRequested(payment);
 
-    log.debug("결제 취소 완료: paymentId={}", updated.getId());
-    return toResponse(updated);
+    log.debug("결제 취소 이벤트 발행 완료: paymentId={}", payment.getId());
+    return toResponse(payment);
   }
 
   private PaymentResponse toResponse(Payment payment) {

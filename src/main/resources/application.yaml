@@ -61,6 +61,8 @@ payment:
     topics:
       process: payment.process
       process-dlq: payment.process.dlq
+      cancel: payment.cancel
+      cancel-dlq: payment.cancel.dlq
 
 ---
 spring:

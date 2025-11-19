@@ -38,7 +38,11 @@ public class PaymentProcessListener {
             .orElseThrow(
                 () -> new PaymentException(PaymentErrorStatus.NOT_FOUND));
 
-    if (!paymentProcessLogService.tryAcquire(message.eventId(), message.paymentId())) {
+    if (paymentProcessLogService.isProcessed(message.eventId())) {
+      log.debug(
+          "이미 처리된 결제 이벤트 무시: eventId={}, paymentId={}",
+          message.eventId(),
+          message.paymentId());
       return;
     }
 
@@ -48,11 +52,11 @@ public class PaymentProcessListener {
         gateway.processPayment(payment.getAmount(), payment.getReservationId()).join();
     Payment completed = payment.complete(transactionId);
     paymentCommandPort.update(completed);
+    paymentProcessLogService.markProcessed(message.eventId(), message.paymentId());
     log.debug(
         "결제 처리 성공: paymentId={}, transactionId={}",
         message.paymentId(),
         transactionId);
-    paymentProcessLogService.release(message.eventId());
   }
 }
 

@@ -28,9 +28,18 @@ public class PaymentKafkaConfig {
     DeadLetterPublishingRecoverer recoverer =
         new DeadLetterPublishingRecoverer(
             kafkaTemplate,
-            (record, ex) ->
-                new org.apache.kafka.common.TopicPartition(
-                    topicsProperties.getProcessDlq(), record.partition()));
+            (record, ex) -> {
+              String topic = record.topic();
+              if (topic.equals(topicsProperties.getProcess())) {
+                return new org.apache.kafka.common.TopicPartition(
+                    topicsProperties.getProcessDlq(), record.partition());
+              }
+              if (topic.equals(topicsProperties.getCancel())) {
+                return new org.apache.kafka.common.TopicPartition(
+                    topicsProperties.getCancelDlq(), record.partition());
+              }
+              return new org.apache.kafka.common.TopicPartition(topic + ".DLT", record.partition());
+            });
 
     ExponentialBackOffWithMaxRetries backOff = new ExponentialBackOffWithMaxRetries(3);
     backOff.setInitialInterval(1000L);
