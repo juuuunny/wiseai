@@ -122,7 +122,7 @@ class PaymentCommandServiceTest {
     // then
     assertThat(result.id()).isEqualTo(DEFAULT_PAYMENT_ID);
     assertThat(result.status()).isEqualTo(PaymentStatus.COMPLETED);
-    verify(paymentCancelEventProducer).publishCancellationRequested(payment);
+    verify(paymentCancelEventProducer).publishPaymentCancelRequested(payment);
   }
 
   @Test
