@@ -19,14 +19,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.wiseai.assignment.modules.meetingroom.application.port.out.command.MeetingRoomCommandPort;
-import com.wiseai.assignment.modules.meetingroom.application.port.out.query.MeetingRoomQueryPort;
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
-import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
-import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -49,8 +48,7 @@ class ReservationPaymentIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    MeetingRoom meetingRoom =
-        MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "테스트용 회의실");
+    MeetingRoom meetingRoom = MeetingRoom.create("회의실 A", 10, new BigDecimal("10000"), "테스트용 회의실");
     MeetingRoom saved = meetingRoomCommandPort.save(meetingRoom);
     meetingRoomId = saved.getId();
 
@@ -85,7 +83,8 @@ class ReservationPaymentIntegrationTest {
     assertThat(paymentResponse.status()).isEqualTo(PaymentStatus.PENDING);
 
     // when: 결제 상태 조회
-    PaymentStatusResponse statusResponse = getPaymentStatusUseCase.getPaymentStatus(paymentResponse.id());
+    PaymentStatusResponse statusResponse =
+        getPaymentStatusUseCase.getPaymentStatus(paymentResponse.id());
 
     // then: 결제 상태 확인
     assertThat(statusResponse.paymentId()).isEqualTo(paymentResponse.id());
@@ -150,4 +149,3 @@ class ReservationPaymentIntegrationTest {
     assertThat(secondPayment.reservationId()).isEqualTo(reservation.id());
   }
 }
-
