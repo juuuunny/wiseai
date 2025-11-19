@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.out.command.PaymentCommandPort;
@@ -35,6 +36,7 @@ class PaymentCommandServiceTest {
   @Mock private PaymentQueryPort paymentQueryPort;
   @Mock private PaymentGatewayFactory paymentGatewayFactory;
   @Mock private PaymentGateway paymentGateway;
+  @Mock private PlatformTransactionManager transactionManager;
 
   @InjectMocks private PaymentCommandService paymentCommandService;
 

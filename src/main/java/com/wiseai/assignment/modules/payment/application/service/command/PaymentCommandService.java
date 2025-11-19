@@ -3,7 +3,9 @@ package com.wiseai.assignment.modules.payment.application.service.command;
 import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.command.CancelPaymentUseCase;
@@ -30,6 +32,11 @@ public class PaymentCommandService
   private final PaymentCommandPort paymentCommandPort;
   private final PaymentQueryPort paymentQueryPort;
   private final PaymentGatewayFactory paymentGatewayFactory;
+  private final PlatformTransactionManager transactionManager;
+
+  private TransactionTemplate getTransactionTemplate() {
+    return new TransactionTemplate(transactionManager);
+  }
 
   @Override
   @Transactional
@@ -43,6 +50,7 @@ public class PaymentCommandService
 
     Payment payment = Payment.create(reservationId, paymentMethod, amount);
     Payment saved = paymentCommandPort.save(payment);
+    Long paymentId = saved.getId();
 
     // PaymentGateway를 통해 실제 결제 처리 (비동기)
     PaymentGateway gateway = paymentGatewayFactory.getGateway(paymentMethod);
@@ -51,20 +59,17 @@ public class PaymentCommandService
         .thenAccept(
             transactionId -> {
               try {
-                Payment completed = saved.complete(transactionId);
-                paymentCommandPort.update(completed);
-                log.debug("결제 처리 완료: paymentId={}, transactionId={}", saved.getId(), transactionId);
+                updatePaymentStatus(paymentId, transactionId, true);
+                log.debug("결제 처리 완료: paymentId={}, transactionId={}", paymentId, transactionId);
               } catch (Exception e) {
-                log.error("결제 완료 처리 중 오류: paymentId={}", saved.getId(), e);
-                Payment failed = saved.fail();
-                paymentCommandPort.update(failed);
+                log.error("결제 완료 처리 중 오류: paymentId={}", paymentId, e);
+                updatePaymentStatus(paymentId, null, false);
               }
             })
         .exceptionally(
             ex -> {
-              log.error("결제 처리 중 오류 발생: paymentId={}", saved.getId(), ex);
-              Payment failed = saved.fail();
-              paymentCommandPort.update(failed);
+              log.error("결제 처리 중 오류 발생: paymentId={}", paymentId, ex);
+              updatePaymentStatus(paymentId, null, false);
               return null;
             });
 
@@ -132,6 +137,36 @@ public class PaymentCommandService
 
     log.debug("결제 취소 완료: paymentId={}", updated.getId());
     return toResponse(updated);
+  }
+
+  /**
+   * 비동기 콜백에서 Payment 상태를 업데이트합니다. 별도 트랜잭션에서 실행됩니다.
+   *
+   * @param paymentId 결제 ID
+   * @param transactionId 거래 ID (성공 시)
+   * @param success 성공 여부
+   */
+  public void updatePaymentStatus(Long paymentId, String transactionId, boolean success) {
+    getTransactionTemplate().executeWithoutResult(
+        status -> {
+          Payment payment =
+              paymentQueryPort
+                  .findById(paymentId)
+                  .orElseThrow(
+                      () -> {
+                        log.warn("결제를 찾을 수 없음: paymentId={}", paymentId);
+                        return new PaymentException(PaymentErrorStatus.NOT_FOUND);
+                      });
+
+          Payment updated;
+          if (success) {
+            updated = payment.complete(transactionId);
+          } else {
+            updated = payment.fail();
+          }
+
+          paymentCommandPort.update(updated);
+        });
   }
 
   private PaymentResponse toResponse(Payment payment) {
