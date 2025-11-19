@@ -22,9 +22,15 @@ import com.wiseai.assignment.modules.meetingroom.application.port.out.command.Me
 import com.wiseai.assignment.modules.meetingroom.domain.model.MeetingRoom;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
 import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentResponse;
+import com.wiseai.assignment.modules.payment.application.dto.response.PaymentStatusResponse;
 import com.wiseai.assignment.modules.payment.application.port.in.query.GetPaymentStatusUseCase;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
+import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
+import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
+import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
+import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 
 @SpringBootTest
