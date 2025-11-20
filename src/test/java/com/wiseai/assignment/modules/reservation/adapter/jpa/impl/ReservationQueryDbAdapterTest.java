@@ -116,9 +116,10 @@ class ReservationQueryDbAdapterTest {
             NON_OVERLAP_END_TIME,
             ReservationStatus.CONFIRMED,
             SECOND_TOTAL_AMOUNT);
+    // entity3는 다른 사용자이지만, UNIQUE 제약 조건을 피하기 위해 다른 시간 사용
     ReservationEntity entity3 =
         new ReservationEntity(
-            DEFAULT_MEETING_ROOM_ID,
+            OTHER_MEETING_ROOM_ID,
             OTHER_USER_ID,
             DEFAULT_START_TIME,
             DEFAULT_END_TIME,
