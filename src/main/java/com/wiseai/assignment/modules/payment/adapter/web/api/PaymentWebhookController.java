@@ -27,7 +27,6 @@ public class PaymentWebhookController implements PaymentWebhookApi {
   private final HandlePaymentWebhookUseCase handlePaymentWebhookUseCase;
   private final ObjectMapper objectMapper;
   private final Validator validator;
-  private final Validator validator;
 
   @Override
   public ResponseEntity<SuccessResponse<Void>> handleWebhook(String provider, Object request) {
