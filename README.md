@@ -2,6 +2,8 @@
 
 **GitHub 저장소**: https://github.com/juuuunny/wiseai
 
+---
+
 ## 📋 프로젝트 개요
 
 사내 회의실 예약을 위한 RESTful API 서버입니다. Docker & Docker Compose 기반 컨테이너 환경에서 실행되며, Swagger UI를 통한 API 문서화 및 테스트를 지원합니다.
@@ -10,18 +12,18 @@
 
 - 회의실 목록 조회
 - 예약 생성/조회/취소 (CRUD)
-- 결제 처리 (다중 결제사 통합)
+- 결제 처리 (다중 결제사 통합: TOSS, KAKAO, CARD, VIRTUAL_ACCOUNT)
 - 결제 상태 조회
 - 결제사별 웹훅 수신
 
 ### 핵심 요구사항
 
-- ✅ 예약 시간 중복 방지 (동일 회의실)
-- ✅ 시작 시간 < 종료 시간
-- ✅ 정시(00분) 또는 30분 단위로만 예약 가능
-- ✅ 요청 파라미터 유효성 검사(Validation) 필수
-- ✅ 결제 시스템 추상화 설계 (Strategy Pattern)
-- ✅ 동시성 제어 (Deadlock 방지)
+- ✅ **예약 시간 중복 방지** (동일 회의실) - `ReservationEntity` UNIQUE 제약조건 + 비즈니스 로직 검증
+- ✅ **시작 시간 < 종료 시간 검증** - `Reservation` 도메인 모델 검증
+- ✅ **정시(00분) 또는 30분 단위** - `Reservation` 도메인 모델 검증
+- ✅ **요청 파라미터 유효성 검사** - Jakarta Validation (`@NotNull`, `@Min`, `@Future` 등)
+- ✅ **결제 시스템 추상화 설계** (Strategy Pattern) - `PaymentGateway` 인터페이스 + 4개 결제사 구현
+- ✅ **동시성 제어** (Deadlock 방지, 분산 락) - Redisson `@DistributedLock` AOP
 
 ---
 
@@ -32,24 +34,25 @@
 - **언어**: Java 17
 - **프레임워크**: Spring Boot 3.3.11
 - **빌드 도구**: Gradle 8.14.3
-- **데이터베이스**: MySQL 8.0 (Docker 컨테이너)
+- **데이터베이스**: MySQL 8.0
 - **ORM**: Spring Data JPA
 - **API 문서화**: Swagger (OpenAPI 3.0) - springdoc-openapi 2.6.0
 - **컨테이너**: Docker + Docker Compose
 - **테스트**: JUnit 5
 
-### 품질 도구
+### 추가 기술 스택
 
-- **Checkstyle**: 코드 스타일 검사
-- **Spotless**: 자동 코드 포맷팅
-- **JaCoCo**: 테스트 커버리지 측정
-- **SonarQube**: 종합 코드 품질 분석
+- **분산 락/토큰 저장**: Redis 7, Redisson (동시성 제어 및 리프레시 토큰 관리)
+- **메시지 큐**: Apache Kafka
+- **아키텍처**: Hexagonal Architecture (Ports & Adapters), DDD, Event-Driven Architecture
+- **코드 품질 도구**: JaCoCo (코드 커버리지), SonarQube (코드 품질 분석), Checkstyle (코딩 표준), Spotless (자동 포맷팅)
+- **CI/CD**: GitHub Actions, Docker Hub
 
 ---
 
 ## 🚀 실행 방법
 
-### 1. Docker Compose로 전체 환경 실행 (권장)
+### Docker Compose로 전체 환경 실행 (권장)
 
 **한 번의 명령으로 전체 실행**:
 
@@ -64,34 +67,13 @@ docker-compose up --build
 - **Health Check**: http://localhost:8081/actuator/health
 - **MySQL**: localhost:3307 (db: `assignment` / user: `assignment` / pass: `assignment`)
 - **WireMock** (모의 결제 서버): http://localhost:8089/\_\_admin/health
-- **SonarQube**: http://localhost:9000 (초기 계정: `admin` / `WiseAi1234@@`)
+- **Redis**: localhost:6380
 
 **중지**:
 
 ```bash
 docker-compose down -v
 ```
-
-### 2. 로컬 실행 (Docker 없이)
-
-**빌드**:
-
-```bash
-./gradlew clean build
-```
-
-**실행**:
-
-```bash
-SPRING_PROFILES_ACTIVE=default ./gradlew bootRun
-```
-
-**접속 URL**:
-
-- Swagger UI: http://localhost:8080/docs
-- Health Check: http://localhost:8080/actuator/health
-
-> **참고**: 로컬 실행 시 MySQL을 별도로 설치하거나 Docker로 MySQL만 실행해야 합니다.
 
 ---
 
@@ -100,13 +82,16 @@ SPRING_PROFILES_ACTIVE=default ./gradlew bootRun
 ### Docker Compose 실행 시
 
 1. `docker-compose up --build` 실행
-2. 브라우저에서 http://localhost:8081/docs 접속
+2. 브라우저에서 **http://localhost:8081/docs** 접속
 3. API 엔드포인트 목록 및 테스트 가능
 
-### 로컬 실행 시
+### 주요 API 엔드포인트
 
-1. `SPRING_PROFILES_ACTIVE=default ./gradlew bootRun` 실행
-2. 브라우저에서 http://localhost:8080/docs 접속
+- **회의실 API**: `GET /meeting-rooms`, `GET /meeting-rooms/{id}`
+- **예약 API**: `POST /reservations`, `GET /reservations/{id}`, `DELETE /reservations/{id}/users/{userId}`
+- **예약 결제 API**: `POST /reservations/{id}/payment` (예약별 결제 처리)
+- **결제 API**: `POST /payments`, `GET /payments/{id}`, `GET /payments/{paymentId}/status` (결제 상태 조회)
+- **웹훅 API**: `POST /webhooks/payments/{provider}` (결제사별 웹훅 수신)
 
 ---
 
@@ -137,195 +122,156 @@ open build/reports/jacoco/test/html/index.html
 ```
 
 **통합 테스트 구성**:
+
 - `ReservationPaymentIntegrationTest`: 예약-결제 통합 플로우 테스트
 - `DeadlockPreventionIntegrationTest`: Deadlock 방지 시나리오 테스트
 - `MockPaymentApiIntegrationTest`: Mock 결제 게이트웨이 테스트
 
-**통합 테스트 환경**:
-- H2 인메모리 데이터베이스 사용
-- Kafka, Redis 관련 컴포넌트는 Mock 처리
-- 외부 의존성 없이 독립적으로 실행 가능
+---
+
+## 🏗️ 설계 결정 사항
+
+> **과제 핵심 요구사항 충족**: 본 섹션은 과제에서 요구한 핵심 주의사항을 어떻게 해결했는지 설명합니다.
+
+### 아키텍처
+
+- **Hexagonal Architecture (Ports & Adapters)**: 비즈니스 로직과 인프라 계층 분리, 테스트 용이성 향상
+- **Domain Model과 Entity 분리**: JPA 의존성 없는 순수 도메인 객체로 비즈니스 로직 독립성 확보
+
+### 1. Strategy Pattern을 통한 결제 시스템 추상화 ⭐ (과제 핵심 요구사항)
+
+**과제 요구사항**: "결제 시스템 추상화 설계" - 결제사별 상이한 API를 공통 인터페이스로 추상화
+
+**구현**:
+
+- `PaymentGateway` 인터페이스: 공통 결제 처리 메서드 정의 (`processPayment()`)
+- `PaymentGatewayFactory`: 결제 수단별 게이트웨이 동적 선택 (TOSS, KAKAO, CARD, VIRTUAL_ACCOUNT)
+- `PaymentResult`: 결제사별 응답을 공통 모델로 변환 (`PaymentStatus.SUCCESS/FAILURE`)
+- **확장성**: 새로운 결제사 추가 시 `PaymentGateway` 구현체만 추가
+
+**구현 위치**: `PaymentGateway`, `PaymentGatewayFactory`, `TossPaymentGateway`, `KakaoPaymentGateway`, `CardPaymentGateway`, `VirtualAccountPaymentGateway`
+
+### 2. 분산 락을 통한 동시성 제어 ⭐ (과제 핵심 요구사항)
+
+**과제 요구사항**: "동시성 제어 (Deadlock 방지, 분산 락)"
+
+**문제 상황**: 동일 회의실에 동시 예약 요청 시 Race Condition, 다중 인스턴스 환경에서 DB 레벨 락만으로는 부족
+
+**해결 방법**:
+
+1. **Redisson 분산 락**: `@DistributedLock` AOP 어노테이션으로 선언적 락 관리, 예약 생성/취소 시 `reservationId` 기반 락 획득
+2. **Deadlock 방지**: Lock 순서 일관성 유지, Timeout 설정, 재시도 로직
+3. **DB 레벨 보완**: `UNIQUE` 제약조건으로 예약 시간 중복 방지 (최종 안전장치)
+
+**구현 위치**: `ReservationCommandService.createReservation()`, `cancelReservation()`, `DistributedLockAspect`, `RedissonDistributedLockManager`
+
+### 3. 예약 시간 중복 방지 (과제 핵심 요구사항)
+
+**과제 요구사항**: "예약 시간 중복 방지 (동일 회의실)"
+
+**다층 방어 전략**:
+
+1. **비즈니스 로직 검증**: 예약 생성 전 동일 회의실의 시간대 중복 체크 (`ReservationQueryPort.findOverlappingReservations()`)
+2. **DB 제약조건**: `@Table(uniqueConstraints = @UniqueConstraint(...))` - 동일한 (회의실, 시작시간, 종료시간) 조합의 중복 방지
+3. **분산 락과의 조합**: 분산 락으로 동시성 제어 + DB 제약조건으로 데이터 무결성 보장
+
+**구현 위치**: `ReservationEntity`, `ReservationCommandService.createReservation()`
+
+### 4. 결제 처리 중 예약 상태 관리 ⭐ (과제 핵심 요구사항)
+
+**과제 요구사항**: "결제 처리 중 예약 상태 관리 (결제 대기 → 결제 완료 → 예약 확정)"
+
+**예약 상태 플로우**:
+
+1. **결제 대기 (PENDING)**: 예약 생성 시 초기 상태 `ReservationStatus.PENDING`
+2. **결제 처리 (비동기)**: `POST /reservations/{id}/payment` 호출 시 Kafka 이벤트 발행, `PaymentProcessListener`가 비동기 처리
+3. **예약 확정 (CONFIRMED)**: 결제 완료(`PaymentStatus.SUCCESS`) 시 자동으로 `CONFIRMED`로 변경
+
+**구현 위치**: `PaymentProcessListener.handleMessage()`, `Reservation.confirm()`
+
+**실무 고려사항**: 비동기 처리로 응답 시간 단축, Idempotency 로그로 중복 처리 방지, DLQ를 통한 실패 이벤트 재처리
+
+### 5. 요청 파라미터 유효성 검사 (과제 핵심 요구사항)
+
+**구현**: Jakarta Validation (`@NotNull`, `@Min`, `@Future` 등), 비즈니스 규칙 검증 (시작 시간 < 종료 시간, 30분 단위), `@ExceptionHandler`로 일관된 에러 응답
+
+**구현 위치**: DTO 클래스, `Reservation` 도메인 모델, `GlobalExceptionHandler`
+
+### 6. Event-Driven Architecture
+
+**구현**: Kafka 비동기 이벤트 처리, Outbox Pattern (트랜잭션 일관성), Idempotency (중복 처리 방지), DLQ 및 Exponential Backoff
+
+**구현 위치**: `PaymentProcessListener`, `PaymentOutboxRelay`, `PaymentProcessLogEntity`
+
+### 7. 테스트 전략
+
+**구현**: 단위 테스트 (Service 레이어, 도메인 모델), 통합 테스트 (예약-결제 플로우, Deadlock 방지, 결제 게이트웨이), H2 In-memory DB, 외부 의존성 Mock 처리
+
+**구현 위치**: `*Test.java`, `*IntegrationTest.java`
 
 ---
 
-## 🔍 품질 검사
+## ☁️ 클라우드 아키텍처 & 실서비스 배포 설계
 
-### Checkstyle (코드 스타일 검사)
+### 인프라 구성
 
-```bash
-./gradlew checkstyleMain checkstyleTest
+**AWS EC2 + RDS** 기반, **Blue-Green 무중단 배포** 전략
+
+- **컴퓨팅**: AWS EC2 (Docker 컨테이너), Nginx 로드밸런서
+- **데이터베이스**: AWS RDS MySQL 8.0, Redis (ElastiCache) - Redisson 분산 락, JWT 토큰 저장
+- **메시지 큐**: Apache Kafka (EC2 또는 MSK)
+- **모니터링**: Spring Actuator + Prometheus, CloudWatch Logs
+- **CI/CD**: GitHub Actions (자동 빌드/테스트, Docker Hub 푸시, 코드 품질 검사)
+
+### 배포 아키텍처
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Internet                              │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+         ┌───────────────────────┐
+         │   Nginx (Load Balancer)│
+         │   Port: 80/443 (HTTPS) │
+         └───────────┬────────────┘
+                     │
+         ┌───────────┴────────────┐
+         │                        │
+         ▼                        ▼
+┌─────────────────┐      ┌─────────────────┐
+│  Blue (Active)  │      │ Green (Standby) │
+│  EC2 Instance   │      │  EC2 Instance    │
+│  Docker Container│      │  Docker Container│
+└────────┬────────┘      └────────┬────────┘
+         │                        │
+         └───────────┬────────────┘
+                     │
+         ┌───────────┴────────────┐
+         ▼                        ▼
+┌─────────────────┐      ┌─────────────────┐
+│   RDS MySQL     │      │   Redis         │
+│   (Primary DB)  │      │   (Distributed Lock) │
+└─────────────────┘      └─────────────────┘
+                     │
+                     ▼
+         ┌───────────────────────┐
+         │   Apache Kafka        │
+         │   (Event Broker)      │
+         └───────────────────────┘
 ```
 
-**리포트 확인**:
+### 배포 전략
 
-```bash
-open build/reports/checkstyle/main.html
-open build/reports/checkstyle/test.html
-```
+**Blue-Green 무중단 배포**: 두 개의 동일한 프로덕션 환경 유지, Nginx 로드밸런서로 트래픽 전환, RDS/Redis/Kafka는 공유 인프라
 
-### Spotless (자동 코드 포맷팅)
+**배포 프로세스**: Green 환경에 새 버전 배포 및 검증 → Nginx 설정 변경으로 트래픽 전환 → Blue 환경 Standby (롤백 대비)
 
-```bash
-# 포맷 적용
-./gradlew spotlessApply
+### 설계 고려사항
 
-# 포맷 검사만
-./gradlew spotlessCheck
-```
-
-### JaCoCo (테스트 커버리지)
-
-```bash
-./gradlew clean test jacocoTestReport
-```
-
-**리포트 확인**:
-
-```bash
-open build/reports/jacoco/test/html/index.html
-```
-
-### SonarQube (종합 품질 분석)
-
-**로컬 SonarQube 사용 시**:
-
-1. SonarQube 실행:
-
-```bash
-docker-compose up -d sonarqube
-```
-
-2. SonarQube 준비 대기 (약 1-2분):
-
-```bash
-# SonarQube가 준비될 때까지 대기
-curl -f http://localhost:9000/api/system/status
-```
-
-3. SonarQube 토큰 발급:
-
-   **방법 1: 웹 UI 사용**
-   - http://localhost:9000 접속
-   - 첫 실행 시: 초기 비밀번호 확인 (로그에서 확인)
-   - 로그인 후: My Account → Security → Generate Token
-
-   **방법 2: API 사용 (자동화)**
-
-```bash
-# SonarQube 10.x: 초기 비밀번호 확인 필요 (로그에서 확인)
-# SonarQube 9.x: 기본 admin/admin 사용 가능
-export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" 2>/dev/null | jq -r '.token // empty')
-
-# 토큰이 생성되었는지 확인
-echo "SONAR_TOKEN=$SONAR_TOKEN"
-```
-
-4. 환경변수 설정:
-
-```bash
-export SONAR_HOST_URL=http://localhost:9000
-export SONAR_TOKEN=<발급받은_토큰>  # 위에서 생성한 토큰
-```
-
-5. 빌드 (자동으로 SonarQube 분석까지 실행):
-
-```bash
-./gradlew clean build
-# 또는 SonarQube만 실행
-./gradlew sonarqube
-```
-
-**참고**: `SONAR_TOKEN`이 설정되지 않으면 SonarQube 분석은 스킵되지만 빌드는 정상적으로 완료됩니다.
-
-**SonarQube 대시보드**: http://localhost:9000/projects?query=assignment
-
----
-
-## 🏗️ 아키텍처
-
-### 설계 원칙
-
-본 프로젝트는 **DDD (Domain-Driven Design)**, **Hexagonal Architecture (Ports & Adapters)**, **Event-Driven Architecture**를 적용하여 설계되었습니다.
-
-### 핵심 특징
-
-#### 1. Domain Model과 Entity 분리
-
-- **Domain Model**: 비즈니스 로직을 담은 순수한 도메인 객체 (JPA 의존성 없음)
-- **Entity**: 데이터베이스 영속성을 위한 JPA 엔티티
-- **Mapper**: Domain Model ↔ Entity 변환 담당
-
-```java
-// Domain Model (비즈니스 로직)
-User user = User.create(email, password, name);
-
-// Entity (영속성 계층)
-UserEntity entity = userEntityMapper.toEntity(user);
-User domain = userEntityMapper.toDomain(entity);
-```
-
-**장점**:
-- Domain Model이 데이터베이스 기술에 독립적
-- 비즈니스 로직과 영속성 계층의 명확한 분리
-- 테스트 용이성 향상
-
-#### 2. Hexagonal Architecture (Ports & Adapters)
-
-**모듈 구조**:
-```
-modules/
-├── adapter/          # 외부와의 연결 (Web, JPA, Redis, 다른 모듈)
-├── application/      # 애플리케이션 로직
-│   ├── port/
-│   │   ├── in/      # Port In (UseCase) - 외부에서 호출받는 용도
-│   │   └── out/     # Port Out - 외부를 호출하는 용도
-│   └── service/     # Application Service (UseCase 구현)
-└── domain/          # 도메인 로직
-    ├── model/       # Domain Model
-    ├── service/     # Domain Service
-    └── exception/   # Domain Exception
-```
-
-**모듈 간 호출 원칙**:
-- Application Service는 **자신의 모듈의 Port Out**만 의존
-- Adapter Out이 실제로 **다른 모듈의 Port In(UseCase)**를 호출
-- Port Out과 Adapter Out은 **호출하는 모듈**에 위치
-
-**예시**: `auth` 모듈이 `user` 모듈을 호출하는 경우
-```java
-// auth 모듈의 Service
-AuthCommandService {
-    UserQueryPort userQueryPort;  // auth 모듈의 Port Out
-}
-
-// auth 모듈의 Adapter
-UserQueryAdapter implements UserQueryPort {
-    IsLoginPossibleUseCase isLoginPossibleUseCase;  // user 모듈의 Port In 호출
-}
-```
-
-**장점**:
-- 모듈 간 결합도 최소화
-- 의존성 역전 원칙(DIP) 준수
-- 테스트 용이성 (Mock 객체 활용)
-
-#### 3. Event-Driven Architecture
-
-- Domain Event를 통한 모듈 간 비동기 통신
-- Kafka를 활용한 비동기 이벤트 처리
-- Outbox Pattern을 통한 트랜잭션 일관성 보장
-- Idempotency를 통한 중복 처리 방지
-- DLQ(Dead Letter Queue) 및 Exponential Backoff를 통한 안정적인 이벤트 처리
-
-### 모듈 구성
-
-- **user**: 사용자 관리 (회원가입, 로그인 인증)
-- **auth**: 인증/인가 (JWT 토큰 관리, 리프레시 토큰)
-- **security**: Spring Security 설정 및 JWT 필터
-- **common**: 공통 응답, 예외 처리, 유틸리티
-- **reservation**: 예약 관리 (생성, 조회, 취소)
-- **payment**: 결제 처리 (다중 결제사 통합, 웹훅 처리)
-- **meetingroom**: 회의실 관리
+- **확장성/가용성**: EC2 Auto Scaling Group, Multi-AZ 배포 (RDS, ElastiCache)
+- **보안**: HTTPS (SSL/TLS), JWT 인증, RDS 암호화, 보안 그룹, Secrets 관리
+- **PCI DSS 준수**: 결제 데이터 분리/암호화, 네트워크 분리, 접근 제어, 감사 로그
 
 ---
 
@@ -336,131 +282,21 @@ assignment/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/wiseai/assignment/
+│   │   │   ├── modules/
+│   │   │   │   ├── reservation/    # 예약 관리
+│   │   │   │   ├── payment/        # 결제 처리
+│   │   │   │   ├── meetingroom/    # 회의실 관리
+│   │   │   │   ├── user/           # 사용자 관리
+│   │   │   │   ├── auth/           # 인증/인가
+│   │   │   │   └── common/         # 공통 모듈
+│   │   │   └── AssignmentApplication.java
 │   │   └── resources/
-│   │       ├── application.yaml
-│   │       └── application-prod.yaml
+│   │       └── application.yaml
 │   └── test/
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml          # CI/CD 파이프라인
-├── docker-compose.yml         # 로컬 개발 환경
-├── docker-compose.aws.yml     # 운영 환경 (EC2)
-├── Dockerfile                 # 애플리케이션 이미지
-├── build.gradle               # 빌드 설정
-├── checkstyle.xml             # 코드 스타일 규칙
-├── quality-gate.yml           # 품질 게이트 설정
-├── SETUP.md                   # 상세 설정 가이드
-└── README.md                  # 프로젝트 문서
+├── docker-compose.yml
+├── Dockerfile
+├── build.gradle
+└── README.md
 ```
 
 ---
-
-## 🔄 Git 브랜치 전략 및 CI/CD
-
-### 브랜치 구조
-
-```
-main (프로덕션) ← EC2 자동 배포
-  ↑
-develop (개발 통합) ← 빌드/테스트만
-  ↑
-feature/* (기능 개발)
-```
-
-### 브랜치별 역할
-
-- **feature/\***: 기능별 개발 브랜치
-- **develop**: 개발 통합 브랜치 (CI: 빌드/테스트/소나 분석만)
-- **main**: 프로덕션 브랜치 (CI/CD: 빌드/테스트/소나 → Docker 빌드/푸시 → EC2 배포)
-
-### CI/CD 파이프라인
-
-**develop 브랜치 push/PR**:
-
-- ✅ Checkstyle 검사
-- ✅ Spotless 검사
-- ✅ 빌드/테스트
-- ✅ JaCoCo 커버리지 리포트
-- ✅ SonarQube 분석
-- ❌ Docker 빌드/배포 없음
-
-**main 브랜치 push/PR**:
-
-- ✅ Checkstyle 검사
-- ✅ Spotless 검사
-- ✅ 빌드/테스트
-- ✅ JaCoCo 커버리지 리포트
-- ✅ SonarQube 분석
-- ✅ Docker 이미지 빌드/푸시 (Docker Hub)
-- ✅ EC2 자동 배포
-
----
-
-## ☁️ 운영 환경 배포 (AWS EC2 + RDS)
-
-**📌 상세 설정 가이드**: [SETUP.md](./SETUP.md) 참조
-
-### 사전 준비
-
-- EC2 (t3.micro) Ubuntu 22.04, 보안그룹 22/80/8080 오픈
-- RDS MySQL (db.t3.micro), 보안그룹에서 EC2 인바운드 허용
-- GitHub Secrets 설정 (Docker Hub, EC2, RDS 정보)
-
-### 배포 절차
-
-1. 로컬에서 `docker-compose up --build`로 개발 검증
-2. develop 브랜치에 통합 (빌드/테스트만 실행)
-3. main 브랜치로 PR 생성 → 머지 시 자동 배포
-
-### 운영 환경 접속
-
-- 앱: http://<EC2_PUBLIC_IP>:8080
-- Swagger: http://<EC2_PUBLIC_IP>:8080/docs
-- Health: http://<EC2_PUBLIC_IP>:8080/actuator/health
-
----
-
-## 📝 개발 가이드
-
-### 로컬 개발 환경 설정
-
-1. **Docker Compose 실행**:
-
-```bash
-docker-compose up --build
-```
-
-2. **SonarQube 토큰 설정** (선택사항):
-
-```bash
-export SONAR_HOST_URL=http://localhost:9000
-export SONAR_TOKEN=<발급받은_토큰>
-```
-
-3. **빌드 및 검증**:
-
-```bash
-./gradlew clean build
-```
-
-### 코드 품질 검사
-
-모든 품질 검사는 빌드 시 자동 실행됩니다:
-
-- Checkstyle: 코드 스타일 위반 시 빌드 실패
-- Spotless: 포맷 위반 시 빌드 실패
-- JaCoCo: 커버리지 30% 미만 시 빌드 실패
-- SonarQube: 분석 결과를 SonarQube 서버에 저장
-
----
-
-## 🔗 관련 문서
-
-- [SETUP.md](./SETUP.md): 상세 설정 가이드 (GitHub Secrets, AWS 인프라 등)
-- [quality-gate.yml](./quality-gate.yml): 품질 게이트 설정
-
----
-
-## 📄 라이선스
-
-이 프로젝트는 과제 전형용으로 작성되었습니다.
