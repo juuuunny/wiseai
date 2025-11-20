@@ -19,6 +19,9 @@ import com.wiseai.assignment.modules.reservation.application.dto.request.Process
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +29,28 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Reservation", description = "예약 관리 API")
 public interface ReservationApi {
 
-  @Operation(summary = "예약 생성", description = "새로운 예약을 생성합니다.")
+  @Operation(
+      summary = "예약 생성",
+      description = "새로운 예약을 생성합니다. 예약 시간은 정시(00분) 또는 30분 단위로만 가능합니다.",
+      requestBody =
+          @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "예약 생성 요청",
+              required = true,
+              content =
+                  @Content(
+                      mediaType = "application/json",
+                      schema = @Schema(implementation = CreateReservationRequest.class),
+                      examples = {
+                        @ExampleObject(
+                            name = "예약 생성 예제",
+                            value =
+                                "{\n"
+                                    + "  \"meetingRoomId\": 1,\n"
+                                    + "  \"startTime\": \"2025-11-20T20:00:00\",\n"
+                                    + "  \"endTime\": \"2025-11-20T20:30:00\",\n"
+                                    + "  \"totalAmount\": 0\n"
+                                    + "}")
+                      })))
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "예약 생성 성공"),
     @ApiResponse(responseCode = "400", description = "잘못된 요청"),
@@ -46,6 +70,10 @@ public interface ReservationApi {
       @PathVariable @Min(1) Long id);
 
   @Operation(summary = "사용자별 예약 목록 조회", description = "사용자 ID로 예약 목록을 조회합니다.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "조회 성공"),
+    @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+  })
   @GetMapping("/reservations/users/{userId}")
   ResponseEntity<SuccessResponse<List<ReservationResponse>>> getReservationsByUserId(
       @PathVariable @Min(1) Long userId);

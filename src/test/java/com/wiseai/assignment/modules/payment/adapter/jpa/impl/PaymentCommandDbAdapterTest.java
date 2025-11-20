@@ -75,7 +75,7 @@ class PaymentCommandDbAdapterTest {
 
     // then
     assertThat(updated.getId()).isEqualTo(saved.getId());
-    assertThat(updated.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(updated.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
     assertThat(updated.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
     assertThat(updated.getReservationId()).isEqualTo(DEFAULT_RESERVATION_ID);
   }

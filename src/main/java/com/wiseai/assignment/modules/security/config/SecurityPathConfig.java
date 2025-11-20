@@ -28,7 +28,11 @@ public class SecurityPathConfig {
           "/",
           "/error",
           "/api/v1/users/signup",
-          "/api/v1/auth");
+          "/api/v1/auth",
+          "/meeting-rooms",
+          "/reservations",
+          "/payments",
+          "/webhooks");
 
   public boolean isJwtExcludedPath(String path) {
     return jwtExcludedPaths.stream().anyMatch(path::startsWith);

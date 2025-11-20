@@ -16,7 +16,8 @@ public enum PaymentErrorStatus implements BaseErrorCode {
   NOT_FOUND(HttpStatus.NOT_FOUND, "PAYMENT-004", "결제를 찾을 수 없습니다."),
   INVALID_STATUS(HttpStatus.BAD_REQUEST, "PAYMENT-005", "유효하지 않은 결제 상태입니다."),
   INVALID_TRANSACTION_ID(HttpStatus.BAD_REQUEST, "PAYMENT-006", "유효하지 않은 거래 ID입니다."),
-  PAYMENT_GATEWAY_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT-007", "결제 게이트웨이 오류가 발생했습니다.");
+  PAYMENT_GATEWAY_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "PAYMENT-007", "결제 게이트웨이 오류가 발생했습니다."),
+  INVALID_REQUEST(HttpStatus.BAD_REQUEST, "PAYMENT-008", "잘못된 요청입니다.");
 
   private final HttpStatus httpStatus;
   private final String code;

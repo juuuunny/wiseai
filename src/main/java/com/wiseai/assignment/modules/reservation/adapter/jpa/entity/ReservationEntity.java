@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
 import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
@@ -19,7 +20,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reservations")
+@Table(
+    name = "reservations",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uk_reservation_meeting_room_time",
+          columnNames = {"meeting_room_id", "start_time", "end_time"})
+    })
 @Getter
 @NoArgsConstructor
 public class ReservationEntity extends BaseTimeEntity {

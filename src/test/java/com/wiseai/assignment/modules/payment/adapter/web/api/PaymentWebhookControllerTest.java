@@ -199,4 +199,22 @@ class PaymentWebhookControllerTest {
         .andDo(print())
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  @DisplayName("지원하지 않는 결제사 웹훅 수신 실패")
+  void handleWebhook_invalidProvider() throws Exception {
+    // given
+    TossWebhookRequest request =
+        new TossWebhookRequest(
+            PAYMENT_KEY, ORDER_ID, STATUS_DONE, TOTAL_AMOUNT, TRANSACTION_ID, null, null);
+
+    // when & then
+    mockMvc
+        .perform(
+            post("/webhooks/payments/invalid-provider")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
 }

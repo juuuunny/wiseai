@@ -70,6 +70,11 @@ public class ReservationCommandService
   }
 
   @Override
+  @DistributedLock(
+      key = "'lock:reservation:cancel:' + #reservationId",
+      waitTime = 200L,
+      leaseTime = 3000L,
+      retry = 3)
   @Transactional
   public ReservationResponse cancelReservation(Long reservationId, Long userId) {
     log.debug("예약 취소 요청: reservationId={}, userId={}", reservationId, userId);

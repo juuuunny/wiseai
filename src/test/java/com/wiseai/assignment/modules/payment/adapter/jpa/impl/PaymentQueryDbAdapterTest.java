@@ -91,7 +91,7 @@ class PaymentQueryDbAdapterTest {
             DEFAULT_RESERVATION_ID,
             PaymentMethod.KAKAO,
             SECOND_AMOUNT,
-            PaymentStatus.COMPLETED,
+            PaymentStatus.SUCCESS,
             "txn_123");
     PaymentEntity entity3 =
         new PaymentEntity(

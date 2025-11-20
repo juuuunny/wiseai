@@ -24,11 +24,16 @@ public class MeetingRoomController implements MeetingRoomApi {
 
   @Override
   public ResponseEntity<SuccessResponse<List<MeetingRoomResponse>>> getMeetingRooms() {
-    log.debug("회의실 목록 조회 API 요청");
-    List<MeetingRoomResponse> meetingRooms = getMeetingRoomsUseCase.getAllMeetingRooms();
-    log.debug("회의실 목록 조회 완료: {}개", meetingRooms.size());
-    return ResponseEntity.ok(
-        SuccessResponse.of(MeetingRoomSuccessStatus.OK_GET_MEETING_ROOMS, meetingRooms));
+    log.info("회의실 목록 조회 API 요청 시작");
+    try {
+      List<MeetingRoomResponse> meetingRooms = getMeetingRoomsUseCase.getAllMeetingRooms();
+      log.info("회의실 목록 조회 완료: {}개", meetingRooms.size());
+      return ResponseEntity.ok(
+          SuccessResponse.of(MeetingRoomSuccessStatus.OK_GET_MEETING_ROOMS, meetingRooms));
+    } catch (Exception e) {
+      log.error("회의실 목록 조회 중 예외 발생", e);
+      throw e;
+    }
   }
 
   @Override

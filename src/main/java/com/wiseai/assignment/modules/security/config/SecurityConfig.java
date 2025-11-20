@@ -34,15 +34,8 @@ public class SecurityConfig {
    *
    * <p>구성 내용: - 지정된 CorsConfigurationSource로 CORS 활성화 - CSRF, 폼 로그인, HTTP Basic 비활성화 - 세션을
    * STATELESS로 설정 - 커스텀 AuthenticationEntryPoint로 인증 예외 처리 - JwtValidateUseCase 기반의 JwtFilter를
-   * UsernamePasswordAuthenticationFilter 앞에 추가 - 엔드포인트별 접근 제어: - Swagger, 정적 리소스, 헬스체크/액추에이터, 웹훅 등
-   * 공개 허용 - 회원가입·비밀번호 재설정·인증·이메일·레퍼런스 등 공개 허용 - GET /api/v1/projects/me, GET /api/v1/projects/like
-   * 및 GET /api/v1/datasets/me는 인증 필요 - 그 외 GET /api/v1/projects/**, GET /api/v1/datasets/**,
-   * /api/v1/files/**, /api/v1/users/** 등은 공개 허용 - /api/v1/user/** 는 USER 또는 ADMIN 역할 필요 -
-   * /api/v1/admin/** 는 ADMIN 역할 필요 - 위에 해당하지 않는 모든 요청은 인증 필요
-   *
-   * <p>CSRF 보호 비활성화 이유: - 이 애플리케이션은 JWT 기반의 Stateless REST API입니다 - 세션 쿠키를 사용하지 않으므로 CSRF 공격에 취약하지
-   * 않습니다 - 모든 인증은 JWT 토큰을 통해 처리되며, 토큰은 Authorization 헤더에 포함됩니다 - CORS 정책이 적절히 설정되어 있어 Cross-Origin
-   * 요청이 제어됩니다
+   * UsernamePasswordAuthenticationFilter 앞에 추가 - 엔드포인트별 접근 제어: - Swagger, 정적 리소스, 헬스체크/액추에이터 등 공개
+   * 허용 - 회원가입·인증 API 공개 허용 - 회의실, 예약, 결제, 웹훅 API 공개 허용 (과제 요구사항) - 그 외 모든 요청은 인증 필요
    *
    * @return 구성된 SecurityFilterChain 인스턴스
    */
@@ -55,10 +48,11 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
+                auth
+                    // Swagger 및 정적 리소스
+                    .requestMatchers(
                         "/swagger",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
@@ -71,19 +65,38 @@ public class SecurityConfig {
                         "/health",
                         "/actuator/**",
                         "/static/**",
-                        "/docs/**")
+                        "/docs/**",
+                        "/error")
                     .permitAll()
+                    // 인증 관련 API (회원가입, 로그인, 토큰 재발급)
                     .requestMatchers("/", "/api/v1/users/signup", "/api/v1/auth/**")
                     .permitAll()
+                    // 회의실 API (공개 - 과제 요구사항)
+                    .requestMatchers("/meeting-rooms", "/meeting-rooms/**")
+                    .permitAll()
+                    // 예약 API (공개 - 과제 요구사항)
+                    .requestMatchers("/reservations", "/reservations/**")
+                    .permitAll()
+                    // 결제 API (공개 - 과제 요구사항)
+                    .requestMatchers("/payments", "/payments/**")
+                    .permitAll()
+                    // 웹훅 API (공개 - 과제 요구사항)
+                    .requestMatchers("/webhooks", "/webhooks/**")
+                    .permitAll()
+                    // 그 외 모든 요청은 인증 필요
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(
             new JwtFilter(jwtValidatePort, securityPathConfig),
-            UsernamePasswordAuthenticationFilter.class);
+            UsernamePasswordAuthenticationFilter.class)
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint));
     return http.build();
   }
 
-  /** actuator 요청은 security filter 자체에서 완전히 제외시킴 (필터 자체 적용 안 됨) */
+  /**
+   * Security 필터 체인에서 완전히 제외할 경로 설정 (필터 자체 적용 안 됨) - actuator: 헬스체크 및 모니터링만 제외 - 공개 API는
+   * permitAll()로 처리하되, JWT 필터는 실행하여 토큰이 있으면 인증 정보 설정
+   */
   @Bean
   public WebSecurityCustomizer webSecurityCustomizer() {
     return web -> web.ignoring().requestMatchers("/actuator/**");

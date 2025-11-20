@@ -76,7 +76,7 @@ public class Payment {
         .reservationId(reservationId)
         .paymentMethod(paymentMethod)
         .amount(amount)
-        .status(PaymentStatus.COMPLETED)
+        .status(PaymentStatus.SUCCESS) // SUCCESS 상태 사용 (요구사항 준수)
         .transactionId(transactionId)
         .build();
   }

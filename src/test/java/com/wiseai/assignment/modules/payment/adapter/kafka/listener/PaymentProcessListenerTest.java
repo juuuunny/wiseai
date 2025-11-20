@@ -30,6 +30,7 @@ import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
+import com.wiseai.assignment.modules.payment.domain.model.PaymentResult;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
 import com.wiseai.assignment.modules.reservation.application.port.out.command.ReservationCommandPort;
 import com.wiseai.assignment.modules.reservation.application.port.out.query.ReservationQueryPort;
@@ -83,7 +84,9 @@ class PaymentProcessListenerTest {
         .willReturn(true); // 선점 성공
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
-        .willReturn(CompletableFuture.completedFuture(DEFAULT_TRANSACTION_ID));
+        .willReturn(
+            CompletableFuture.completedFuture(
+                PaymentResult.success(DEFAULT_TRANSACTION_ID, DEFAULT_AMOUNT)));
     given(reservationQueryPort.findById(DEFAULT_RESERVATION_ID))
         .willReturn(Optional.of(reservationWithId));
 
@@ -94,7 +97,7 @@ class PaymentProcessListenerTest {
     ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
     verify(paymentCommandPort).update(paymentCaptor.capture());
     Payment updatedPayment = paymentCaptor.getValue();
-    assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(updatedPayment.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
     assertThat(updatedPayment.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
 
     ArgumentCaptor<Reservation> reservationCaptor = ArgumentCaptor.forClass(Reservation.class);
@@ -158,7 +161,7 @@ class PaymentProcessListenerTest {
         .willReturn(true);
     given(paymentGatewayFactory.getGateway(PaymentMethod.TOSS)).willReturn(paymentGateway);
     given(paymentGateway.processPayment(DEFAULT_AMOUNT, DEFAULT_RESERVATION_ID))
-        .willReturn(CompletableFuture.failedFuture(new RuntimeException("PG Error")));
+        .willReturn(CompletableFuture.completedFuture(PaymentResult.failure("PG Error")));
 
     // when & then
     assertThatThrownBy(() -> paymentProcessListener.handleMessage(message))
@@ -169,7 +172,8 @@ class PaymentProcessListenerTest {
                     .isEqualTo(PaymentErrorStatus.PAYMENT_GATEWAY_ERROR));
 
     verify(paymentProcessLogService).release(DEFAULT_EVENT_ID); // 실패 시 release 호출
-    verify(paymentCommandPort, never()).update(any()); // 업데이트 호출 안 됨
+    // PaymentResult.failure()를 반환하면 Payment.fail()이 호출되어 업데이트됨
+    verify(paymentCommandPort).update(any()); // 실패 시 Payment.fail()로 업데이트
     verify(paymentProcessLogService, never()).markProcessed(any(), any()); // 마킹 호출 안 됨
   }
 

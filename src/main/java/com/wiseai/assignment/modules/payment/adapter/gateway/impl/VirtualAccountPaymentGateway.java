@@ -14,16 +14,21 @@ import com.wiseai.assignment.modules.payment.domain.model.PaymentResult;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 가상계좌 결제 게이트웨이 (C사)
+ *
+ * <p>가상계좌 결제를 처리합니다.
+ */
 @Slf4j
 @Component
-public class KakaoPaymentGateway implements PaymentGateway {
+public class VirtualAccountPaymentGateway implements PaymentGateway {
 
   private final RestClient restClient;
   private final String gatewayUrl;
 
-  public KakaoPaymentGateway(
+  public VirtualAccountPaymentGateway(
       RestClient.Builder restClientBuilder,
-      @Value("${payment.gateway.kakao.url:http://wiremock:8080/kakao/payments}")
+      @Value("${payment.gateway.virtual-account.url:http://wiremock:8080/virtual-account/payments}")
           String gatewayUrl) {
     this.restClient =
         restClientBuilder
@@ -35,48 +40,48 @@ public class KakaoPaymentGateway implements PaymentGateway {
 
   @Override
   public CompletableFuture<PaymentResult> processPayment(BigDecimal amount, Long orderId) {
-    log.debug("KAKAO 결제 처리 시작: amount={}, orderId={}", amount, orderId);
+    log.debug("가상계좌 결제 처리 시작: amount={}, orderId={}", amount, orderId);
 
     return CompletableFuture.supplyAsync(
         () -> {
           try {
-            var request = new KakaoPaymentRequest(amount, orderId);
+            var request = new VirtualAccountPaymentRequest(amount, orderId);
             var response =
                 restClient
                     .post()
                     .uri("/")
                     .body(request)
                     .retrieve()
-                    .body(KakaoPaymentResponse.class);
+                    .body(VirtualAccountPaymentResponse.class);
 
             if (response == null || response.transactionId() == null) {
-              log.error("KAKAO 결제 처리 실패: 응답이 null입니다. amount={}, orderId={}", amount, orderId);
-              return PaymentResult.failure("KAKAO 결제 처리 실패: 응답이 null입니다.");
+              log.error("가상계좌 결제 처리 실패: 응답이 null입니다. amount={}, orderId={}", amount, orderId);
+              return PaymentResult.failure("가상계좌 결제 처리 실패: 응답이 null입니다.");
             }
 
-            log.debug("KAKAO 결제 처리 완료: transactionId={}", response.transactionId());
-            // KAKAO 결제사 응답을 PaymentResult 공통 모델로 변환
+            log.debug("가상계좌 결제 처리 완료: transactionId={}", response.transactionId());
+            // 가상계좌 결제사 응답을 PaymentResult 공통 모델로 변환
             return PaymentResult.success(response.transactionId(), amount);
           } catch (Exception e) {
-            log.error("KAKAO 결제 처리 중 오류 발생: amount={}, orderId={}", amount, orderId, e);
-            return PaymentResult.failure("KAKAO 결제 처리 실패: " + e.getMessage());
+            log.error("가상계좌 결제 처리 중 오류 발생: amount={}, orderId={}", amount, orderId, e);
+            return PaymentResult.failure("가상계좌 결제 처리 실패: " + e.getMessage());
           }
         });
   }
 
   @Override
   public CompletableFuture<Boolean> cancelPayment(String transactionId) {
-    log.debug("KAKAO 결제 취소 시작: transactionId={}", transactionId);
+    log.debug("가상계좌 결제 취소 시작: transactionId={}", transactionId);
 
     return CompletableFuture.supplyAsync(
         () -> {
           try {
             restClient.post().uri("/" + transactionId + "/cancel").retrieve().toBodilessEntity();
 
-            log.debug("KAKAO 결제 취소 완료: transactionId={}", transactionId);
+            log.debug("가상계좌 결제 취소 완료: transactionId={}", transactionId);
             return true;
           } catch (Exception e) {
-            log.error("KAKAO 결제 취소 중 오류 발생: transactionId={}", transactionId, e);
+            log.error("가상계좌 결제 취소 중 오류 발생: transactionId={}", transactionId, e);
             return false;
           }
         });
@@ -84,10 +89,10 @@ public class KakaoPaymentGateway implements PaymentGateway {
 
   @Override
   public PaymentMethod getSupportedPaymentMethod() {
-    return PaymentMethod.KAKAO;
+    return PaymentMethod.VIRTUAL_ACCOUNT;
   }
 
-  private record KakaoPaymentRequest(BigDecimal amount, Long orderId) {}
+  private record VirtualAccountPaymentRequest(BigDecimal amount, Long orderId) {}
 
-  private record KakaoPaymentResponse(String transactionId, String status) {}
+  private record VirtualAccountPaymentResponse(String transactionId, String status) {}
 }
