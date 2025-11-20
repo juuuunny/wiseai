@@ -24,6 +24,8 @@ public class PaymentWebhookController implements PaymentWebhookApi {
 
   private final HandlePaymentWebhookUseCase handlePaymentWebhookUseCase;
   private final ObjectMapper objectMapper;
+  private final Validator validator;
+  private final Validator validator;
 
   @Override
   public ResponseEntity<SuccessResponse<Void>> handleWebhook(String provider, Object request) {
@@ -72,6 +74,14 @@ public class PaymentWebhookController implements PaymentWebhookApi {
 
   private void handleTossWebhook(Object request) {
     TossWebhookRequest tossRequest = objectMapper.convertValue(request, TossWebhookRequest.class);
+
+    // 유효성 검사
+    var violations = validator.validate(tossRequest);
+    if (!violations.isEmpty()) {
+      log.warn("TOSS 웹훅 유효성 검사 실패: violations={}", violations);
+      throw new PaymentException(PaymentErrorStatus.INVALID_REQUEST);
+    }
+
     log.info(
         "TOSS 웹훅 처리: paymentKey={}, orderId={}, status={}",
         tossRequest.paymentKey(),
@@ -91,6 +101,14 @@ public class PaymentWebhookController implements PaymentWebhookApi {
   private void handleKakaoWebhook(Object request) {
     KakaoWebhookRequest kakaoRequest =
         objectMapper.convertValue(request, KakaoWebhookRequest.class);
+
+    // 유효성 검사
+    var violations = validator.validate(kakaoRequest);
+    if (!violations.isEmpty()) {
+      log.warn("KAKAO 웹훅 유효성 검사 실패: violations={}", violations);
+      throw new PaymentException(PaymentErrorStatus.INVALID_REQUEST);
+    }
+
     log.info(
         "KAKAO 웹훅 처리: paymentKey={}, orderId={}, status={}",
         kakaoRequest.paymentKey(),
