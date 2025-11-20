@@ -1,5 +1,7 @@
 package com.wiseai.assignment.modules.payment.adapter.web.api;
 
+import jakarta.validation.Validator;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
