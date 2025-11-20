@@ -2,11 +2,12 @@ package com.wiseai.assignment.modules.common.util;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import io.micrometer.common.lang.Nullable;
-import jakarta.servlet.http.HttpServletRequest;
 
 public final class WebRequestUtil {
   private WebRequestUtil() {}

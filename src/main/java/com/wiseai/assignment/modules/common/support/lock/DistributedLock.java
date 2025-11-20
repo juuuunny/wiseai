@@ -1,22 +1,16 @@
 package com.wiseai.assignment.modules.common.support.lock;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
-/**
- * Placeholder annotation for distributed locking. Actual AOP implementation can be added later; the
- * annotation itself allows code to compile.
- */
-@Target({ElementType.METHOD})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface DistributedLock {
-  String key();
+  String key(); // 예: "'lock:user:' + #userId"
 
-  long waitTime() default 0L;
+  long waitTime() default 200L; // 락 획득 대기 시간 (ms)
 
-  long leaseTime() default 0L;
+  long leaseTime() default 3000L; // 락 점유 시간 (ms), 이후 자동 해제
 
-  int retry() default 0;
+  int retry() default 3; // 락 획득 재시도 횟수
 }

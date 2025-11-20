@@ -1,6 +1,7 @@
 package com.wiseai.assignment;
 
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -10,6 +11,7 @@ import com.wiseai.assignment.modules.payment.application.port.out.query.PaymentQ
 @SpringBootTest
 class AssignmentApplicationTests {
 
+  @MockBean private RedissonClient redissonClient;
   @MockBean private PaymentQueryPort paymentQueryPort;
   @MockBean private PaymentCommandPort paymentCommandPort;
 

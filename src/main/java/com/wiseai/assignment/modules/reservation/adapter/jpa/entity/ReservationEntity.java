@@ -3,9 +3,6 @@ package com.wiseai.assignment.modules.reservation.adapter.jpa.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
-import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +11,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.wiseai.assignment.modules.common.base.BaseTimeEntity;
+import com.wiseai.assignment.modules.reservation.domain.enums.ReservationStatus;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
