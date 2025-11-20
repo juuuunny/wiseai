@@ -17,6 +17,7 @@ import com.wiseai.assignment.modules.reservation.application.port.in.command.Pro
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.query.GetReservationsUseCase;
 import com.wiseai.assignment.modules.reservation.domain.status.ReservationSuccessStatus;
+import com.wiseai.assignment.modules.security.handler.SecurityContextProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +38,7 @@ public class ReservationController implements ReservationApi {
       CreateReservationRequest request) {
     log.debug("예약 생성 API 요청: meetingRoomId={}", request.meetingRoomId());
 
-    // TODO: Security Context에서 userId 가져오기 (현재는 임시로 1L 사용)
-    Long userId = 1L;
+    Long userId = SecurityContextProvider.getAuthenticatedUserId();
 
     ReservationResponse response =
         createReservationUseCase.createReservation(
@@ -66,6 +66,15 @@ public class ReservationController implements ReservationApi {
   public ResponseEntity<SuccessResponse<List<ReservationResponse>>> getReservationsByUserId(
       Long userId) {
     log.debug("사용자별 예약 목록 조회 API 요청: userId={}", userId);
+
+    Long authenticatedUserId = SecurityContextProvider.getAuthenticatedUserId();
+    if (!authenticatedUserId.equals(userId)) {
+      log.warn("권한 없음: 요청 userId={}, 인증 userId={}", userId, authenticatedUserId);
+      throw new com.wiseai.assignment.modules.reservation.domain.exception.ReservationException(
+          com.wiseai.assignment.modules.reservation.domain.status.ReservationErrorStatus
+              .UNAUTHORIZED);
+    }
+
     List<ReservationResponse> response = getReservationsUseCase.getReservationsByUserId(userId);
     log.debug("사용자별 예약 목록 조회 완료: userId={}, count={}", userId, response.size());
     return ResponseEntity.ok(
@@ -76,6 +85,15 @@ public class ReservationController implements ReservationApi {
   public ResponseEntity<SuccessResponse<ReservationResponse>> cancelReservation(
       Long id, Long userId) {
     log.debug("예약 취소 API 요청: reservationId={}, userId={}", id, userId);
+
+    Long authenticatedUserId = SecurityContextProvider.getAuthenticatedUserId();
+    if (!authenticatedUserId.equals(userId)) {
+      log.warn("권한 없음: 요청 userId={}, 인증 userId={}", userId, authenticatedUserId);
+      throw new com.wiseai.assignment.modules.reservation.domain.exception.ReservationException(
+          com.wiseai.assignment.modules.reservation.domain.status.ReservationErrorStatus
+              .UNAUTHORIZED);
+    }
+
     ReservationResponse response = cancelReservationUseCase.cancelReservation(id, userId);
     log.debug("예약 취소 완료: reservationId={}", id);
     return ResponseEntity.ok(
