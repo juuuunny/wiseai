@@ -125,7 +125,7 @@ class PaymentControllerTest {
             DEFAULT_RESERVATION_ID,
             PaymentMethod.TOSS,
             DEFAULT_AMOUNT,
-            PaymentStatus.COMPLETED,
+            PaymentStatus.SUCCESS,
             DEFAULT_TRANSACTION_ID);
 
     given(completePaymentUseCase.completePayment(DEFAULT_PAYMENT_ID, DEFAULT_TRANSACTION_ID))
@@ -142,7 +142,7 @@ class PaymentControllerTest {
         .andExpect(jsonPath("$.httpStatus").value(200))
         .andExpect(jsonPath("$.code").value("PAYMENT-002"))
         .andExpect(jsonPath("$.message").value("결제 완료에 성공했습니다."))
-        .andExpect(jsonPath("$.data.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.data.status").value("SUCCESS"))
         .andExpect(jsonPath("$.data.transactionId").value(DEFAULT_TRANSACTION_ID));
   }
 
@@ -284,7 +284,7 @@ class PaymentControllerTest {
     // given
     PaymentStatusResponse response =
         new PaymentStatusResponse(
-            DEFAULT_PAYMENT_ID, PaymentStatus.COMPLETED, DEFAULT_TRANSACTION_ID);
+            DEFAULT_PAYMENT_ID, PaymentStatus.SUCCESS, DEFAULT_TRANSACTION_ID);
 
     given(getPaymentStatusUseCase.getPaymentStatus(DEFAULT_PAYMENT_ID)).willReturn(response);
 
@@ -297,7 +297,7 @@ class PaymentControllerTest {
         .andExpect(jsonPath("$.code").value("PAYMENT-006"))
         .andExpect(jsonPath("$.message").value("결제 상태 조회에 성공했습니다."))
         .andExpect(jsonPath("$.data.paymentId").value(DEFAULT_PAYMENT_ID))
-        .andExpect(jsonPath("$.data.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.data.status").value("SUCCESS"))
         .andExpect(jsonPath("$.data.transactionId").value(DEFAULT_TRANSACTION_ID));
   }
 

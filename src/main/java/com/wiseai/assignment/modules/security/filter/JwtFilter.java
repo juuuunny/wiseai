@@ -24,7 +24,9 @@ import com.wiseai.assignment.modules.security.principal.UserAuthentication;
 import com.wiseai.assignment.modules.user.domain.enums.RoleType;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -81,7 +83,9 @@ public class JwtFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getServletPath();
-    return securityPathConfig.isJwtExcludedPath(path);
+    boolean shouldNotFilter = securityPathConfig.isJwtExcludedPath(path);
+    log.info("JwtFilter.shouldNotFilter: path={}, shouldNotFilter={}", path, shouldNotFilter);
+    return shouldNotFilter;
   }
 
   /**

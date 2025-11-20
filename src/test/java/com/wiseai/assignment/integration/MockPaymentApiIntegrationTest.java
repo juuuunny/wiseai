@@ -29,6 +29,7 @@ import com.wiseai.assignment.modules.payment.application.port.in.command.Complet
 import com.wiseai.assignment.modules.payment.application.port.in.command.CreatePaymentUseCase;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentStatus;
+import com.wiseai.assignment.modules.payment.domain.model.PaymentResult;
 import com.wiseai.assignment.modules.reservation.application.dto.response.ReservationResponse;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.CreateReservationUseCase;
 import com.wiseai.assignment.modules.reservation.application.port.in.command.ProcessReservationPaymentUseCase;
@@ -78,7 +79,9 @@ class MockPaymentApiIntegrationTest {
     // given: Mock 결제 게이트웨이 설정
     String mockTransactionId = "txn_mock_12345";
     given(tossPaymentGateway.processPayment(eq(totalAmount), eq(reservation.id())))
-        .willReturn(CompletableFuture.completedFuture(mockTransactionId));
+        .willReturn(
+            CompletableFuture.completedFuture(
+                PaymentResult.success(mockTransactionId, totalAmount)));
     given(tossPaymentGateway.getSupportedPaymentMethod()).willReturn(PaymentMethod.TOSS);
 
     // when: 결제 생성
@@ -102,14 +105,16 @@ class MockPaymentApiIntegrationTest {
     // given: Mock 결제 게이트웨이 성공 응답
     String mockTransactionId = "txn_success_12345";
     given(tossPaymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
-        .willReturn(CompletableFuture.completedFuture(mockTransactionId));
+        .willReturn(
+            CompletableFuture.completedFuture(
+                PaymentResult.success(mockTransactionId, totalAmount)));
 
     // when: 결제 완료
     PaymentResponse completedPayment =
         completePaymentUseCase.completePayment(payment.id(), mockTransactionId);
 
     // then: 결제 완료 확인
-    assertThat(completedPayment.status()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(completedPayment.status()).isEqualTo(PaymentStatus.SUCCESS);
     assertThat(completedPayment.transactionId()).isEqualTo(mockTransactionId);
   }
 
@@ -120,9 +125,9 @@ class MockPaymentApiIntegrationTest {
     PaymentResponse payment =
         createPaymentUseCase.createPayment(1L, PaymentMethod.TOSS, totalAmount);
 
-    // given: Mock 결제 게이트웨이 실패 응답 (예외 발생)
+    // given: Mock 결제 게이트웨이 실패 응답
     given(tossPaymentGateway.processPayment(any(BigDecimal.class), any(Long.class)))
-        .willReturn(CompletableFuture.failedFuture(new RuntimeException("결제 게이트웨이 오류")));
+        .willReturn(CompletableFuture.completedFuture(PaymentResult.failure("결제 게이트웨이 오류")));
 
     // when & then: 결제 완료 시도 시 예외가 발생하지 않음 (비동기 처리이므로)
     // 실제 결제 게이트웨이 호출은 비동기로 처리되므로, 여기서는 결제 생성만 확인

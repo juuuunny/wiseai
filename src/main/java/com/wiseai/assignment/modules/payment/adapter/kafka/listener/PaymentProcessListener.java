@@ -12,6 +12,7 @@ import com.wiseai.assignment.modules.payment.application.service.gateway.Payment
 import com.wiseai.assignment.modules.payment.application.service.infrastructure.PaymentProcessLogService;
 import com.wiseai.assignment.modules.payment.domain.exception.PaymentException;
 import com.wiseai.assignment.modules.payment.domain.model.Payment;
+import com.wiseai.assignment.modules.payment.domain.model.PaymentResult;
 import com.wiseai.assignment.modules.payment.domain.status.PaymentErrorStatus;
 import com.wiseai.assignment.modules.reservation.application.port.out.command.ReservationCommandPort;
 import com.wiseai.assignment.modules.reservation.application.port.out.query.ReservationQueryPort;
@@ -62,9 +63,20 @@ public class PaymentProcessListener {
     try {
       PaymentGateway gateway = paymentGatewayFactory.getGateway(payment.getPaymentMethod());
 
-      String transactionId =
+      // 결제사별 응답을 PaymentResult 공통 모델로 변환하여 받음
+      PaymentResult paymentResult =
           gateway.processPayment(payment.getAmount(), payment.getReservationId()).join();
-      Payment completed = payment.complete(transactionId);
+
+      if (!paymentResult.isSuccess()) {
+        log.error(
+            "결제 처리 실패: paymentId={}, message={}", message.paymentId(), paymentResult.getMessage());
+        Payment failed = payment.fail();
+        paymentCommandPort.update(failed);
+        throw new PaymentException(PaymentErrorStatus.PAYMENT_GATEWAY_ERROR);
+      }
+
+      // PaymentResult에서 transactionId 추출하여 Payment 도메인 모델로 변환
+      Payment completed = payment.complete(paymentResult.getTransactionId());
       paymentCommandPort.update(completed);
 
       // 결제 완료 시 예약 상태 확정
@@ -87,7 +99,7 @@ public class PaymentProcessListener {
       log.info(
           "결제 처리 및 예약 확정 완료: paymentId={}, transactionId={}, reservationId={}",
           message.paymentId(),
-          transactionId,
+          paymentResult.getTransactionId(),
           payment.getReservationId());
     } catch (Exception e) {
       log.error(

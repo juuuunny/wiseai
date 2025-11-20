@@ -10,7 +10,7 @@ plugins {
 
 	// 품질 분석용 (필요시 활성화)
 	id 'jacoco'
-	id 'org.sonarqube' version '4.2.1.3168'
+	// id 'org.sonarqube' version '4.2.1.3168'  // SonarQube 비활성화 (최종 제출용)
 }
 
 group = 'com.wiseai'
@@ -115,36 +115,37 @@ tasks.named('test') {
 }
 
 // ===== SonarQube 설정 =====
-sonarqube {
-	properties {
-		property "sonar.projectKey", "juuuunny_wiseai"
-		property "sonar.projectName", "wiseai"
-
-		def sonarHostUrl = System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
-		property "sonar.host.url", sonarHostUrl
-		property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
-
-		// SonarQube Cloud를 사용하는 경우 organization 필수
-		def sonarOrganization = System.getenv("SONAR_ORGANIZATION")
-		if (sonarOrganization) {
-			property "sonar.organization", sonarOrganization
-		}
-
-		property "sonar.sources", "src/main/java"
-		property "sonar.tests", "src/test/java"
-		property "sonar.java.binaries", "build/classes/java/main"
-		property "sonar.java.test.binaries", "build/classes/java/test"
-		property "sonar.java.coveragePlugin", "jacoco"
-		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
-		property "sonar.sourceEncoding", "UTF-8"
-		property "sonar.java.source", "17"
-		property "sonar.java.target", "17"
-		// 리소스 파일에서 하드코딩된 자격증명 검사 제외 (환경 변수 사용)
-		property "sonar.issue.ignore.multicriteria", "e1"
-		property "sonar.issue.ignore.multicriteria.e1.ruleKey", "java:S6437"
-		property "sonar.issue.ignore.multicriteria.e1.resourceKey", "**/application*.yaml"
-	}
-}
+// SonarQube 비활성화 (최종 제출용)
+// sonarqube {
+//	properties {
+//		property "sonar.projectKey", "juuuunny_wiseai"
+//		property "sonar.projectName", "wiseai"
+//
+//		def sonarHostUrl = System.getenv("SONAR_HOST_URL") ?: "http://localhost:9000"
+//		property "sonar.host.url", sonarHostUrl
+//		property "sonar.token", System.getenv("SONAR_TOKEN") ?: ""
+//
+//		// SonarQube Cloud를 사용하는 경우 organization 필수
+//		def sonarOrganization = System.getenv("SONAR_ORGANIZATION")
+//		if (sonarOrganization) {
+//			property "sonar.organization", sonarOrganization
+//		}
+//
+//		property "sonar.sources", "src/main/java"
+//		property "sonar.tests", "src/test/java"
+//		property "sonar.java.binaries", "build/classes/java/main"
+//		property "sonar.java.test.binaries", "build/classes/java/test"
+//		property "sonar.java.coveragePlugin", "jacoco"
+//		property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+//		property "sonar.sourceEncoding", "UTF-8"
+//		property "sonar.java.source", "17"
+//		property "sonar.java.target", "17"
+//		// 리소스 파일에서 하드코딩된 자격증명 검사 제외 (환경 변수 사용)
+//		property "sonar.issue.ignore.multicriteria", "e1"
+//		property "sonar.issue.ignore.multicriteria.e1.ruleKey", "java:S6437"
+//		property "sonar.issue.ignore.multicriteria.e1.resourceKey", "**/application*.yaml"
+//	}
+//}
 
 // ===== Checkstyle 설정 (항상 활성화) =====
 checkstyle {
@@ -295,14 +296,15 @@ jacocoTestCoverageVerification {
 }
 
 // SonarQube를 필수 단계로 강제: 분석 전에 테스트/커버리지 생성
-tasks.named('sonarqube') {
-	dependsOn 'test', 'jacocoTestReport'
-	// SONAR_TOKEN이 있을 때만 실행 (로컬/CI 모두)
-	// 로컬: docker-compose up으로 SonarQube 실행 후 토큰 설정 필요
-	//   예: export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" | jq -r '.token')
-	// CI: GitHub Actions에서 자동으로 토큰 생성
-	onlyIf {
-		def token = System.getenv('SONAR_TOKEN')
-		return token != null && !token.isEmpty()
-	}
-}
+// SonarQube 비활성화 (최종 제출용)
+// tasks.named('sonarqube') {
+//	dependsOn 'test', 'jacocoTestReport'
+//	// SONAR_TOKEN이 있을 때만 실행 (로컬/CI 모두)
+//	// 로컬: docker-compose up으로 SonarQube 실행 후 토큰 설정 필요
+//	//   예: export SONAR_TOKEN=$(curl -u admin:admin -X POST "http://localhost:9000/api/user_tokens/generate?name=local-token&type=PROJECT_ANALYSIS_TOKEN" | jq -r '.token')
+//	// CI: GitHub Actions에서 자동으로 토큰 생성
+//	onlyIf {
+//		def token = System.getenv('SONAR_TOKEN')
+//		return token != null && !token.isEmpty()
+//	}
+//}

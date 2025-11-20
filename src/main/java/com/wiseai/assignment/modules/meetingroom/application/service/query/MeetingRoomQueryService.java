@@ -26,19 +26,24 @@ public class MeetingRoomQueryService implements GetMeetingRoomsUseCase, GetMeeti
   @Transactional(readOnly = true)
   public List<MeetingRoomResponse> getAllMeetingRooms() {
     log.debug("회의실 목록 조회 요청");
-    List<MeetingRoomResponse> result =
-        meetingRoomQueryPort.findAll().stream()
-            .map(
-                meetingRoom ->
-                    new MeetingRoomResponse(
-                        meetingRoom.getId(),
-                        meetingRoom.getName(),
-                        meetingRoom.getCapacity(),
-                        meetingRoom.getHourlyFee(),
-                        meetingRoom.getDescription()))
-            .toList();
-    log.debug("회의실 목록 조회 완료: {}개", result.size());
-    return result;
+    try {
+      List<MeetingRoomResponse> result =
+          meetingRoomQueryPort.findAll().stream()
+              .map(
+                  meetingRoom ->
+                      new MeetingRoomResponse(
+                          meetingRoom.getId(),
+                          meetingRoom.getName(),
+                          meetingRoom.getCapacity(),
+                          meetingRoom.getHourlyFee(),
+                          meetingRoom.getDescription()))
+              .toList();
+      log.debug("회의실 목록 조회 완료: {}개", result.size());
+      return result;
+    } catch (Exception e) {
+      log.error("회의실 목록 조회 중 오류 발생", e);
+      throw e;
+    }
   }
 
   @Override

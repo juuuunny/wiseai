@@ -44,7 +44,7 @@ class PaymentTest {
     Payment completed = paymentWithId.complete(transactionId);
 
     // then
-    assertThat(completed.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
+    assertThat(completed.getStatus()).isEqualTo(PaymentStatus.SUCCESS);
     assertThat(completed.getTransactionId()).isEqualTo(transactionId);
   }
 

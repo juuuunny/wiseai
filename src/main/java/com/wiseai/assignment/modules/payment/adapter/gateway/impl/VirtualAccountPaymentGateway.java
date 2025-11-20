@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 
 import com.wiseai.assignment.modules.payment.application.port.out.gateway.PaymentGateway;
 import com.wiseai.assignment.modules.payment.domain.enums.PaymentMethod;
+import com.wiseai.assignment.modules.payment.domain.model.PaymentResult;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +39,7 @@ public class VirtualAccountPaymentGateway implements PaymentGateway {
   }
 
   @Override
-  public CompletableFuture<String> processPayment(BigDecimal amount, Long orderId) {
+  public CompletableFuture<PaymentResult> processPayment(BigDecimal amount, Long orderId) {
     log.debug("가상계좌 결제 처리 시작: amount={}, orderId={}", amount, orderId);
 
     return CompletableFuture.supplyAsync(
@@ -54,14 +55,16 @@ public class VirtualAccountPaymentGateway implements PaymentGateway {
                     .body(VirtualAccountPaymentResponse.class);
 
             if (response == null || response.transactionId() == null) {
-              throw new RuntimeException("가상계좌 결제 처리 실패: 응답이 null입니다.");
+              log.error("가상계좌 결제 처리 실패: 응답이 null입니다. amount={}, orderId={}", amount, orderId);
+              return PaymentResult.failure("가상계좌 결제 처리 실패: 응답이 null입니다.");
             }
 
             log.debug("가상계좌 결제 처리 완료: transactionId={}", response.transactionId());
-            return response.transactionId();
+            // 가상계좌 결제사 응답을 PaymentResult 공통 모델로 변환
+            return PaymentResult.success(response.transactionId(), amount);
           } catch (Exception e) {
             log.error("가상계좌 결제 처리 중 오류 발생: amount={}, orderId={}", amount, orderId, e);
-            throw new RuntimeException("가상계좌 결제 처리 실패", e);
+            return PaymentResult.failure("가상계좌 결제 처리 실패: " + e.getMessage());
           }
         });
   }
